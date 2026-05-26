@@ -41,7 +41,11 @@
 }
 
 *,*::before,*::after{box-sizing:border-box;}
-html{scroll-behavior:smooth;}
+html{
+  scroll-behavior:smooth;
+  overflow-x:hidden;
+  max-width:100%;
+}
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto;}
   *{animation:none!important; transition:none!important;}
@@ -55,8 +59,11 @@ body{
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   overflow-x:hidden;
+  max-width:100%;
+  position:relative;
   line-height:1.6;
 }
+img, svg, video, canvas{max-width:100%;}
 img{max-width:100%; display:block;}
 a{color:inherit; text-decoration:none;}
 button{font:inherit;}
@@ -80,10 +87,12 @@ em{font-style:italic;}
 /* ---------- Nav ---------- */
 .nav{
   position:fixed; top:0; left:0; right:0; z-index:100;
-  display:flex; align-items:center; gap:24px;
+  display:flex; align-items:center; gap:16px;
   padding:18px var(--pad-x);
   background:rgba(251,248,241,.0);
   transition:background var(--t), padding var(--t), box-shadow var(--t), backdrop-filter var(--t);
+  max-width:100vw;
+  width:100%;
 }
 .nav.is-scrolled{
   background:rgba(251,248,241,.85);
@@ -92,23 +101,36 @@ em{font-style:italic;}
   box-shadow:0 1px 0 var(--line);
   padding:12px var(--pad-x);
 }
-.nav-brand{display:flex; align-items:center; gap:12px; flex-shrink:0;}
+.nav-brand{
+  display:flex; align-items:center; gap:12px;
+  flex:0 1 auto; min-width:0;
+  text-decoration:none;
+}
 .nav-mark{
   width:34px; height:34px; border-radius:10px;
   background:var(--navy-800); color:var(--gold-400);
   display:grid; place-items:center;
+  flex-shrink:0;
   transition:transform var(--t);
 }
 .nav-mark svg{width:18px; height:18px; fill:currentColor;}
 .nav-brand:hover .nav-mark{transform:rotate(-6deg) scale(1.05);}
-.nav-brand-text{display:flex; flex-direction:column; line-height:1.1;}
-.nav-brand-name{font-family:'Fraunces', serif; font-weight:600; font-size:18px; color:var(--navy-800); letter-spacing:.01em;}
-.nav-brand-sub{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-500);}
+.nav-brand-text{display:flex; flex-direction:column; line-height:1.1; min-width:0;}
+.nav-brand-name{
+  font-family:'Fraunces', serif; font-weight:600;
+  font-size:18px; color:var(--navy-800); letter-spacing:.01em;
+  white-space:nowrap;
+}
+.nav-brand-sub{
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-500);
+  white-space:nowrap;
+}
 .nav.is-light .nav-brand-name{color:var(--cream-50);}
 .nav.is-light .nav-brand-sub{color:var(--cream-200);}
 .nav.is-light .nav-mark{background:rgba(255,255,255,.10); color:var(--gold-300);}
 
-.nav-links{margin-left:auto; display:flex; gap:6px; flex-wrap:nowrap;}
+.nav-links{margin-left:auto; display:flex; gap:4px; flex-wrap:nowrap;}
 .nav-links a{
   padding:8px 14px; border-radius:999px;
   font-size:14px; color:var(--navy-800);
@@ -118,7 +140,7 @@ em{font-style:italic;}
 .nav-links a:hover{background:rgba(12,14,19,.06);}
 .nav.is-light .nav-links a:hover{background:rgba(255,255,255,.10); color:#fff;}
 
-.nav-cta{margin-left:6px;}
+.nav-cta{margin-left:6px; flex-shrink:0;}
 .nav-toggle{
   display:none;
   width:42px; height:42px;
@@ -126,6 +148,8 @@ em{font-style:italic;}
   margin-left:auto;
   cursor:pointer;
   position:relative;
+  flex-shrink:0;
+  z-index:2;
 }
 .nav-toggle span{
   position:absolute; left:10px; right:10px; height:2px;
@@ -140,10 +164,16 @@ body.drawer-open .nav-toggle span:nth-child(1){top:20px; transform:rotate(45deg)
 body.drawer-open .nav-toggle span:nth-child(2){opacity:0;}
 body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg);}
 
-@media (max-width: 980px){
+@media (max-width: 1024px){
   .nav-links{display:none;}
   .nav-cta{display:none;}
   .nav-toggle{display:block;}
+}
+@media (max-width: 380px){
+  .nav-brand-sub{display:none;}
+  .nav-brand-name{font-size:16px;}
+  .nav{padding:14px 16px;}
+  .nav.is-scrolled{padding:10px 16px;}
 }
 
 /* ---------- Drawer ---------- */
@@ -192,7 +222,7 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
 
 /* ---------- Layout primitives ---------- */
 .container{max-width:var(--maxw); margin:0 auto; padding:0 var(--pad-x);}
-.section{padding:clamp(80px, 11vw, 140px) 0; position:relative;}
+.section{padding:clamp(80px, 11vw, 140px) 0; position:relative; max-width:100vw; overflow-x:clip;}
 .section + .section{border-top:1px solid var(--line);}
 
 .eyebrow{
@@ -229,14 +259,15 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
 
 .two-col{
   display:grid;
-  grid-template-columns:1.05fr 1fr;
+  grid-template-columns:minmax(0, 1.05fr) minmax(0, 1fr);
   gap:clamp(36px, 6vw, 88px);
   align-items:center;
 }
+.two-col > *{min-width:0;}
 .two-col.reverse .col-text{order:2;}
 .two-col.reverse .col-media{order:1;}
 @media (max-width: 900px){
-  .two-col{grid-template-columns:1fr;}
+  .two-col{grid-template-columns:minmax(0, 1fr);}
   .two-col.reverse .col-text{order:1;}
   .two-col.reverse .col-media{order:2;}
 }
@@ -254,6 +285,8 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
   background:radial-gradient(120% 80% at 15% 0%, #14306a 0%, #0a1a3a 45%, #07142e 100%);
   overflow:hidden;
   isolation:isolate;
+  width:100%;
+  max-width:100vw;
 }
 #heroCanvas{
   position:absolute; inset:0; z-index:-1;
@@ -376,8 +409,11 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
 .floating-frame--right{left:auto; right:-30px;}
 .floating-frame img{width:100%; height:100%; object-fit:cover;}
 .col-media{position:relative;}
-@media (max-width: 900px){
+@media (max-width: 1100px){
   .floating-frame{right:-10px; bottom:-30px;}
+}
+@media (max-width: 900px){
+  .floating-frame, .floating-frame--right{right:0; bottom:-20px; width:45%;}
 }
 
 /* ---------- MISSION ---------- */
@@ -801,6 +837,7 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
   font-size:17px; color:var(--navy-900);
   letter-spacing:-0.005em;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  min-width:0;
 }
 .contact-method-arrow{
   flex-shrink:0;
@@ -818,6 +855,13 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
 }
 .contact-method--wa:hover{border-color:#25D366;}
 .contact-method--wa .contact-method-value{color:var(--navy-900);}
+
+@media (max-width: 420px){
+  .contact-method-value{font-size:15px;}
+  .contact-method{gap:12px; padding:14px;}
+  .contact-method-icon{width:40px; height:40px;}
+  .contact-method-arrow{display:none;}
+}
 
 .contact-card-foot{
   margin:22px 0 0;
