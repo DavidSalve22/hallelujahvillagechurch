@@ -196,16 +196,31 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
   .nav.is-scrolled{padding:10px 16px;}
 }
 
-/* ---------- Drawer ---------- */
+/* ---------- Drawer ----------
+   Closed state uses display:none so the drawer literally does not render
+   anywhere — no transform percentages, no stuck animations, no leftover
+   chrome at the top of the viewport on iOS Safari. */
 .drawer{
-  position:fixed; inset:0; z-index:90;
+  position:fixed;
+  top:0; left:0; right:0;
+  height:100vh;
+  width:100%;
+  z-index:90;
   background:linear-gradient(180deg, var(--navy-900), var(--navy-800));
-  display:flex; flex-direction:column; gap:8px;
+  display:none;
+  flex-direction:column; gap:8px;
   padding:100px var(--pad-x) 40px;
-  transform:translateY(-100%);
-  transition:transform .55s cubic-bezier(.7,0,.2,1);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
 }
-.drawer.is-open{transform:translateY(0);}
+.drawer.is-open{
+  display:flex;
+  animation: drawer-slide-in .5s cubic-bezier(.7,0,.2,1) both;
+}
+@keyframes drawer-slide-in{
+  from{ transform: translateY(-100vh); opacity: .8; }
+  to  { transform: translateY(0);      opacity: 1; }
+}
 .drawer a{
   font-family:'Fraunces', serif;
   font-size:30px; color:var(--cream-50);
@@ -213,6 +228,11 @@ body.drawer-open .nav-toggle span:nth-child(3){top:20px; transform:rotate(-45deg
   border-bottom:1px solid rgba(255,255,255,.08);
 }
 .drawer a.btn{display:inline-flex; margin-top:18px; border-bottom:0;}
+
+/* Defensive — no Donate or other button may ever render inside the header */
+.nav .btn,
+.nav .btn-gold,
+.nav .nav-cta{display:none !important;}
 
 /* ---------- Buttons ---------- */
 .btn{
