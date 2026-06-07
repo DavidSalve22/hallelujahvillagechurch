@@ -2247,7 +2247,10 @@ body.lang-ta .drawer a{
 
 /* ---------- Buttery cinematic reveals (Apple-style easing + blur-in) ---------- */
 /* Long 1.1s ease-out-quart with subtle blur-in feels like a film fade,
-   not a snap. The blur dissolves as the element settles into place. */
+   not a snap. The blur dissolves as the element settles into place.
+   NOTE: filter:blur disabled on mobile - many blurred elements on iOS Safari
+   blow past the GPU memory budget and tab-crash the page. Opacity + transform
+   alone still feel premium. */
 body.js-ready .reveal,
 body.js-ready .reveal-rise{
   transition:
@@ -2263,6 +2266,18 @@ body.js-ready .reveal-rise.is-visible{
 body.js-ready .reveal-rise{transform:translateY(36px);}
 body.js-ready .reveal-rise.is-visible{transform:translateY(0);}
 
+/* Mobile: drop the blur filter to prevent iOS WebKit GPU-memory crashes */
+@media (max-width: 760px){
+  body.js-ready .reveal,
+  body.js-ready .reveal-rise,
+  body.js-ready .auto-reveal{
+    filter:none !important;
+    transition:
+      opacity 0.85s cubic-bezier(.16,.84,.30,1),
+      transform 0.85s cubic-bezier(.16,.84,.30,1) !important;
+  }
+}
+
 /* Stagger reveals inside same section by index for natural cascade */
 .section .reveal:nth-child(1),
 .section .reveal-rise:nth-child(1){transition-delay:0ms;}
@@ -2277,7 +2292,8 @@ body.js-ready .reveal-rise.is-visible{transform:translateY(0);}
 .section .reveal:nth-child(6),
 .section .reveal-rise:nth-child(6){transition-delay:400ms;}
 
-/* Auto-reveals applied by JS - same buttery treatment */
+/* Auto-reveals applied by JS - same buttery treatment.
+   Blur disabled on mobile via the @media block above. */
 body.js-ready .auto-reveal{
   opacity:0;
   transform:translateY(28px);
@@ -2291,6 +2307,24 @@ body.js-ready .auto-reveal.is-visible{
   opacity:1;
   transform:translateY(0);
   filter:blur(0);
+}
+
+/* Mobile: also lighten the Ken-Burns slow zoom and slideshow scale */
+@media (max-width: 760px){
+  .hero-slide,
+  .hero-slide.is-active,
+  .parallax-frame .parallax-inner img,
+  .pastor-portrait.parallax-frame .parallax-inner img{
+    animation:none !important;
+    transform:none !important;
+  }
+  .parallax-frame .parallax-inner{
+    /* JS scroll parallax also disabled on mobile via reduceMotion proxy */
+    transform:none !important;
+    inset:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+  }
 }
 
 /* Smoother snap-free scroll behavior */
