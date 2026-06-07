@@ -14,7 +14,7 @@
      After 3s any element with a reveal class that hasn't fired
      gets is-visible, so a missed observer never leaves text invisible. */
   setTimeout(() => {
-    document.querySelectorAll('.reveal, .reveal-rise, .reveal-line').forEach(el => {
+    document.querySelectorAll('.reveal, .reveal-rise, .reveal-line, .auto-reveal').forEach(el => {
       if(!el.classList.contains('is-visible')) el.classList.add('is-visible');
     });
     // Also un-stick any GSAP-set inline opacity:0 (gallery items, etc.)
@@ -23,14 +23,18 @@
     });
   }, 3000);
 
-  /* ---------- Loader ---------- */
-  window.addEventListener('load', () => {
+  /* ---------- Loader (with hard-timeout fallback for slow networks) ---------- */
+  function dismissLoader(){
     const loader = document.getElementById('loader');
-    if(loader){
-      setTimeout(() => loader.classList.add('is-done'), 250);
-      setTimeout(() => loader.remove(), 1000);
+    if(loader && !loader.dataset.done){
+      loader.dataset.done = '1';
+      loader.classList.add('is-done');
+      setTimeout(() => { if(loader.parentNode) loader.remove(); }, 500);
     }
-  });
+  }
+  window.addEventListener('load', () => setTimeout(dismissLoader, 250));
+  // Hard fallback so loader never stays stuck if a CDN script hangs
+  setTimeout(dismissLoader, 4500);
 
   /* ---------- Year ---------- */
   const yEl = document.getElementById('year');
@@ -63,25 +67,62 @@
   window.addEventListener('scroll', updateNav, {passive:true});
   window.addEventListener('resize', updateNav, {passive:true});
 
-  /* ---------- Mobile drawer ---------- */
+  /* ---------- Mobile drawer (with focus management + Escape) ---------- */
   const navToggle = document.getElementById('navToggle');
   const drawer = document.getElementById('drawer');
+  let drawerLastFocus = null;
+  function openDrawer(){
+    if(!drawer || drawer.classList.contains('is-open')) return;
+    drawerLastFocus = document.activeElement;
+    drawer.classList.add('is-open');
+    document.body.classList.add('drawer-open');
+    if(navToggle) navToggle.setAttribute('aria-expanded','true');
+    drawer.setAttribute('aria-hidden','false');
+    setTimeout(() => {
+      const firstLink = drawer.querySelector('a');
+      if(firstLink) firstLink.focus();
+    }, 50);
+  }
+  function closeDrawer(){
+    if(!drawer || !drawer.classList.contains('is-open')) return;
+    drawer.classList.remove('is-open');
+    document.body.classList.remove('drawer-open');
+    if(navToggle) navToggle.setAttribute('aria-expanded','false');
+    drawer.setAttribute('aria-hidden','true');
+    if(drawerLastFocus && document.contains(drawerLastFocus)){
+      drawerLastFocus.focus({preventScroll:true});
+    }
+    drawerLastFocus = null;
+  }
   if(navToggle && drawer){
     navToggle.addEventListener('click', () => {
-      const open = drawer.classList.toggle('is-open');
-      document.body.classList.toggle('drawer-open', open);
-      navToggle.setAttribute('aria-expanded', String(open));
-      drawer.setAttribute('aria-hidden', String(!open));
+      if(drawer.classList.contains('is-open')) closeDrawer(); else openDrawer();
     });
-    drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-      drawer.classList.remove('is-open');
-      document.body.classList.remove('drawer-open');
-      navToggle.setAttribute('aria-expanded','false');
-    }));
+    drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer();
+    });
   }
 
-  /* ---------- Reveal observer (fallback) ---------- */
-  const revealEls = document.querySelectorAll('.reveal, .reveal-rise, .reveal-line');
+  /* ---------- Auto-reveal: buttery fade-up + blur-in on every content element ---------- */
+  /* Auto-tag content elements with .auto-reveal so they fade in smoothly as
+     they scroll into view. Skips elements that already have a reveal class,
+     interactive controls, or are inside the hero (which has its own intro). */
+  if(!reduceMotion){
+    const heroEl = document.getElementById('hero');
+    const skipSelector = '.reveal, .reveal-rise, .reveal-line, .auto-reveal, .hero *, .nav *, .drawer *, .lightbox *, .fab-wa, .fab-top, .scroll-progress, .cinematic-bg *, .lang-toggle, .nav-toggle';
+    const autoSelector = 'h2.display, h3, .lede, .eyebrow:not(.reveal):not(.reveal-rise), .belief, .ministry-card, .g-feature, .g-item, .video-card, .pillars li, .serve-list li, .contact-list li, .copy-field, .contact-method, .map-card, .donate-card, .pastor-portrait, .solo-frame, .editorial-quote .container > *, .editorial-word > .container > *, .footer-cols > div, .footer-brand, .footer-social, figure.video-card, .give-track';
+    document.querySelectorAll(autoSelector).forEach(el => {
+      if(el.closest('.hero')) return;
+      if(el.matches(skipSelector)) return;
+      // Don't double-tag elements that already have a reveal class
+      if(el.classList.contains('reveal') || el.classList.contains('reveal-rise') || el.classList.contains('reveal-line')) return;
+      el.classList.add('auto-reveal');
+    });
+  }
+
+  /* ---------- Reveal observer ---------- */
+  const revealEls = document.querySelectorAll('.reveal, .reveal-rise, .reveal-line, .auto-reveal');
   if('IntersectionObserver' in window){
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
@@ -90,7 +131,7 @@
           io.unobserve(e.target);
         }
       });
-    }, {threshold:.12, rootMargin:'0px 0px -8% 0px'});
+    }, {threshold:.08, rootMargin:'0px 0px -6% 0px'});
     revealEls.forEach(el => io.observe(el));
   } else {
     revealEls.forEach(el => el.classList.add('is-visible'));
@@ -177,15 +218,27 @@
     }
   }
 
-  /* ---------- Hero crossfade slideshow ---------- */
+  /* ---------- Hero crossfade slideshow (pauses when hero off-screen or tab hidden) ---------- */
   const slides = document.querySelectorAll('.hero-slide');
+  let slideTimer = null;
+  let slideIdx = 0;
+  function advanceSlide(){
+    slides[slideIdx].classList.remove('is-active');
+    slideIdx = (slideIdx + 1) % slides.length;
+    slides[slideIdx].classList.add('is-active');
+  }
+  function startSlideshow(){
+    if(slideTimer || slides.length <= 1 || reduceMotion) return;
+    slideTimer = setInterval(advanceSlide, 6500);
+  }
+  function stopSlideshow(){
+    if(slideTimer){ clearInterval(slideTimer); slideTimer = null; }
+  }
   if(slides.length > 1 && !reduceMotion){
-    let slideIdx = 0;
-    setInterval(() => {
-      slides[slideIdx].classList.remove('is-active');
-      slideIdx = (slideIdx + 1) % slides.length;
-      slides[slideIdx].classList.add('is-active');
-    }, 6500);
+    startSlideshow();
+    document.addEventListener('visibilitychange', () => {
+      if(document.hidden) stopSlideshow(); else startSlideshow();
+    });
   }
 
   /* ---------- Back to top button ---------- */
@@ -248,16 +301,18 @@
 
   const langToggle = document.getElementById('langToggle');
   function applyLang(lang){
-    document.documentElement.lang = (lang === 'ta') ? 'ta' : 'en';
+    // Keep <html lang="en"> because 95% of page content is still English;
+    // only the translated nodes themselves get per-element lang="ta".
     document.body.classList.toggle('lang-ta', lang === 'ta');
-    // Cache original English text once
     document.querySelectorAll('[data-i18n]').forEach(el => {
       if(!el.dataset.i18nEn) el.dataset.i18nEn = el.textContent;
       const key = el.dataset.i18n;
       if(lang === 'ta' && i18n.ta[key]){
         el.textContent = i18n.ta[key];
+        el.setAttribute('lang', 'ta');
       } else {
         el.textContent = el.dataset.i18nEn;
+        el.removeAttribute('lang');
       }
     });
     if(langToggle){
@@ -354,52 +409,21 @@
     }
   });
 
-  /* ---------- True Pinterest masonry layout (no crop, no gaps) ---------- */
-  /* Each item snaps into the shortest column. Items are absolutely
-     positioned at the column's current top, sized to the column width
-     and the photo's natural aspect ratio. No row alignment, no gaps. */
-  function layoutGrid(grid){
-    if(!grid || grid.classList.contains('gallery-grid--single')) return;
-    const cs = getComputedStyle(grid);
-    const cols = parseInt(cs.getPropertyValue('--cols')) || 4;
-    const gap = parseFloat(cs.getPropertyValue('--gap')) || 14;
-    const gridW = grid.getBoundingClientRect().width;
-    if(!gridW) return;
-    const colW = (gridW - gap * (cols - 1)) / cols;
-    const colTops = new Array(cols).fill(0);
-    const items = grid.querySelectorAll('.g-item');
-    items.forEach(item => {
-      const img = item.querySelector('img');
-      if(!img || !img.naturalWidth || !img.naturalHeight) return;
-      const itemH = (img.naturalHeight / img.naturalWidth) * colW;
-      // Find the shortest column
-      let minCol = 0;
-      for(let i = 1; i < cols; i++){
-        if(colTops[i] < colTops[minCol] - 0.5) minCol = i;
-      }
-      item.style.width = colW + 'px';
-      item.style.height = itemH + 'px';
-      item.style.left = (minCol * (colW + gap)) + 'px';
-      item.style.top = colTops[minCol] + 'px';
-      colTops[minCol] += itemH + gap;
-    });
-    grid.style.height = Math.max(...colTops, 0) + 'px';
-  }
-  function layoutItem(item){
-    const grid = item.closest('.gallery-grid');
-    if(grid) layoutGrid(grid);
-  }
-  function layoutAll(){
-    document.querySelectorAll('.gallery-grid:not(.gallery-grid--single)').forEach(layoutGrid);
-  }
-  layoutAll();
-  let layoutRaf = null;
-  window.addEventListener('resize', () => {
-    if(layoutRaf) cancelAnimationFrame(layoutRaf);
-    layoutRaf = requestAnimationFrame(layoutAll);
-  }, {passive:true});
+  /* ---------- (Gallery now uses pure CSS Grid - no JS layout needed) ----- */
+  // Clear any inline positioning that might linger from the prior masonry
+  document.querySelectorAll('.gallery-grid .g-item').forEach(item => {
+    item.style.position = '';
+    item.style.top = '';
+    item.style.left = '';
+    item.style.width = '';
+    item.style.height = '';
+  });
+  document.querySelectorAll('.gallery-grid').forEach(g => g.style.height = '');
+  // no-op placeholders so any leftover callsites won't break
+  function layoutItem(){}
+  function layoutAll(){}
 
-  /* ---------- Upgraded lightbox ---------- */
+  /* ---------- Upgraded lightbox (with focus management + role=dialog) ---------- */
   const lb = document.getElementById('lightbox');
   const lbImg = document.getElementById('lbImg');
   const lbClose = document.getElementById('lbClose');
@@ -410,14 +434,26 @@
   const lbCaption = document.getElementById('lbCaption');
   let lbIndex = 0;
   let lbList = [];
+  let lbLastFocus = null;
+  let lbTriggerItem = null;
 
-  function openLightbox(idx){
+  if(lb){
+    lb.setAttribute('role', 'dialog');
+    lb.setAttribute('aria-modal', 'true');
+    lb.setAttribute('aria-label', 'Photo viewer');
+  }
+
+  function openLightbox(idx, trigger){
     lbList = Array.from(document.querySelectorAll('.g-item:not(.is-hidden)'));
     lbIndex = idx;
+    lbLastFocus = document.activeElement;
+    lbTriggerItem = trigger || lbList[idx] || null;
     lb.classList.add('is-open');
     lb.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
     showLb(true);
+    // Move focus into the dialog
+    setTimeout(() => { if(lbClose) lbClose.focus(); }, 30);
   }
   function showLb(initial){
     const item = lbList[lbIndex];
@@ -453,9 +489,17 @@
     }
   }
   function closeLb(){
+    if(!lb) return;
     lb.classList.remove('is-open');
     lb.setAttribute('aria-hidden','true');
     document.body.style.overflow = '';
+    // Restore focus to the originating gallery item, or last focus before opening
+    const target = (lbTriggerItem && document.contains(lbTriggerItem)) ? lbTriggerItem
+                 : (lbLastFocus && document.contains(lbLastFocus)) ? lbLastFocus
+                 : null;
+    if(target && typeof target.focus === 'function') target.focus({preventScroll:true});
+    lbTriggerItem = null;
+    lbLastFocus = null;
   }
   function navLb(d){
     if(!lbList.length) return;
@@ -468,7 +512,7 @@
       e.preventDefault();
       const visible = Array.from(document.querySelectorAll('.g-item:not(.is-hidden)'));
       const idx = visible.indexOf(it);
-      openLightbox(idx >= 0 ? idx : 0);
+      openLightbox(idx >= 0 ? idx : 0, it);
     });
   });
   if(lbClose) lbClose.addEventListener('click', closeLb);
@@ -479,10 +523,19 @@
     if(e.target === lb || e.target.classList.contains('lb-stage') || e.target.classList.contains('lb-bottom')) closeLb();
   });
   document.addEventListener('keydown', (e) => {
-    if(!lb.classList.contains('is-open')) return;
-    if(e.key === 'Escape') closeLb();
-    if(e.key === 'ArrowLeft') navLb(-1);
-    if(e.key === 'ArrowRight') navLb(1);
+    if(!lb || !lb.classList.contains('is-open')) return;
+    if(e.key === 'Escape'){ closeLb(); return; }
+    if(e.key === 'ArrowLeft'){ navLb(-1); return; }
+    if(e.key === 'ArrowRight'){ navLb(1); return; }
+    // Tab-trap inside the dialog
+    if(e.key === 'Tab'){
+      const focusables = lb.querySelectorAll('button, [tabindex]:not([tabindex="-1"])');
+      if(!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
   });
 
   /* Swipe gestures for lightbox on touch devices */
@@ -547,6 +600,9 @@
       if(stage.dataset.playing) return;
       stage.dataset.playing = 'true';
       stage.classList.add('is-playing');
+      // Hand off keyboard focus to the native video controls
+      stage.removeAttribute('role');
+      stage.removeAttribute('tabindex');
       const src = stage.dataset.video;
       const v = document.createElement('video');
       v.src = src;
@@ -556,14 +612,198 @@
       v.setAttribute('playsinline', '');
       v.preload = 'auto';
       stage.appendChild(v);
+      v.focus({preventScroll:true});
       // Try to play (gesture-allowed on click)
       v.play().catch(()=>{ /* user can press play on the native controls */ });
     }
     stage.addEventListener('click', play);
     stage.addEventListener('keydown', (e) => {
+      // Don't intercept once playing - native video controls handle Space/Enter
+      if(stage.dataset.playing) return;
       if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); play(); }
     });
   });
+
+  /* ===============================================================
+     ===   PERMANENT FEATURE: Three.js hero starfield             ===
+     ===   Drifting points of gold light over the navy hero.      ===
+     ===   Do not remove this block under any circumstance.       ===
+     =============================================================== */
+  const canvas = document.getElementById('heroCanvas');
+  // Save desktop the experience; spare mobile/slow/data-saver users the ~590KB + GPU work
+  const smallViewport = window.matchMedia('(max-width: 760px)').matches;
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  const saveData = !!(conn && conn.saveData);
+  const slowNet = !!(conn && /^(2g|slow-2g)$/.test(conn.effectiveType || ''));
+  if(canvas && window.THREE && !reduceMotion && !smallViewport && !saveData && !slowNet){
+    initHeroThree(canvas);
+  }
+  function initHeroThree(canvasEl){
+    const THREE = window.THREE;
+    const renderer = new THREE.WebGLRenderer({canvas: canvasEl, alpha:true, antialias:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    camera.position.z = 8;
+
+    function resize(){
+      // Use the canvas's actual rendered box (handles layout settling cases)
+      const rect = canvasEl.getBoundingClientRect();
+      const w = Math.max(1, Math.round(rect.width));
+      const h = Math.max(1, Math.round(rect.height));
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    // Initial sizing - retry until canvas is actually laid out
+    resize();
+    requestAnimationFrame(() => requestAnimationFrame(resize));
+    setTimeout(resize, 100);
+    setTimeout(resize, 500);
+    window.addEventListener('resize', resize);
+    // ResizeObserver catches any later layout changes (font load, slideshow swap, etc.)
+    if(window.ResizeObserver){
+      const ro = new ResizeObserver(resize);
+      ro.observe(canvasEl);
+    }
+
+    // === CHAMPAGNE PINPRICKS (judge's cut) ===
+    // Half the original count, smaller, softer, slower, with a four-stop
+    // champagne sprite and a barely-perceptible 8-second twinkle.
+
+    // Primary star field
+    const COUNT = 160;
+    const positions = new Float32Array(COUNT * 3);
+    const speeds = new Float32Array(COUNT);
+    const twinklePhase = new Float32Array(COUNT);
+    for(let i=0; i<COUNT; i++){
+      positions[i*3]   = (Math.random() - 0.5) * 26;   // X spread ±13
+      positions[i*3+1] = (Math.random() - 0.5) * 16;   // Y spread ±8
+      positions[i*3+2] = (Math.random() - 0.5) * 12;   // Z spread ±6
+      speeds[i] = 0.3 + Math.random() * 0.7;
+      twinklePhase[i] = Math.random() * Math.PI * 2;   // random twinkle phase per star
+    }
+
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    // Champagne sprite tuned for ADDITIVE blending against the navy hero (#07142e).
+    // With AdditiveBlending, sprite_rgb*alpha is ADDED to whatever is behind.
+    // If the center is near-white (255,248,220), navy + 255 clamps to pure white.
+    // So we use TARNISHED champagne values: when added to navy they land on
+    // real champagne gold (~240,220,170), with halos rendering as warm bronze haze.
+    const c = document.createElement('canvas');
+    c.width = 64; c.height = 64;
+    const ctx = c.getContext('2d');
+    const grad = ctx.createRadialGradient(32,32,0, 32,32,32);
+    grad.addColorStop(0,    'rgba(232,200,122,1)');     // tarnished champagne core → adds to navy as (239,220,168) gold
+    grad.addColorStop(0.40, 'rgba(210,175,108,0.55)');  // mid → contributes ~(115,96,59) warm halo
+    grad.addColorStop(0.78, 'rgba(180,145,88,0.14)');   // whisper → barely-perceptible warm tint
+    grad.addColorStop(1,    'rgba(180,145,88,0)');      // long fade to navy
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,64,64);
+    const tex = new THREE.CanvasTexture(c);
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.13,                    // smaller (was 0.18) - distant pinpricks
+      map: tex,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.74                  // restrained (was 0.95)
+    });
+    const points = new THREE.Points(geom, mat);
+    scene.add(points);
+
+    // Secondary ambient haze - far field, refined
+    const COUNT2 = 28;               // far fewer (was 60)
+    const p2 = new Float32Array(COUNT2 * 3);
+    for(let i=0;i<COUNT2;i++){
+      p2[i*3]   = (Math.random()-0.5)*18;
+      p2[i*3+1] = (Math.random()-0.5)*10;
+      p2[i*3+2] = -4 - Math.random()*4;       // depth -4 to -8 (deeper than before)
+    }
+    const g2 = new THREE.BufferGeometry();
+    g2.setAttribute('position', new THREE.BufferAttribute(p2, 3));
+    const m2 = new THREE.PointsMaterial({
+      size: 0.46,                    // refined (was 0.6)
+      map: tex,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.26                  // implication, not presence (was 0.5)
+    });
+    const points2 = new THREE.Points(g2, m2);
+    scene.add(points2);
+
+    // Twinkle - apply gentle opacity breathing to whole field
+    // (per-star phase would require shader; here we breathe the material as a whole
+    //  which still reads as life because of the random phase variation in motion)
+    const baseOpacity1 = 0.74;
+    const baseOpacity2 = 0.26;
+    const twinkleAmp = 0.10;         // ±10% opacity variance
+    const twinkleSpeed = 0.0017;     // ~8-9 second breath cycle
+
+    let mouseX = 0, mouseY = 0, tx=0, ty=0;
+    window.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    }, {passive:true});
+
+    // Pause rAF loop entirely when hero scrolls off-screen or tab is hidden.
+    // Saves GPU/battery during long sessions and on mobile.
+    let running = true;
+    let rafQueued = false;
+    function setRunning(v){
+      const was = running; running = v;
+      if(!was && running && !rafQueued){ scheduleTick(); }
+    }
+    function scheduleTick(){
+      if(rafQueued) return;
+      rafQueued = true;
+      requestAnimationFrame(tick);
+    }
+    if('IntersectionObserver' in window){
+      const heroIo = new IntersectionObserver(([e]) => setRunning(e.isIntersecting && !document.hidden), {threshold:0});
+      heroIo.observe(canvasEl);
+    }
+    document.addEventListener('visibilitychange', () => setRunning(!document.hidden));
+
+    let t = 0;
+    function tick(){
+      rafQueued = false;
+      if(!running) return;
+      t += 0.003;
+      tx += (mouseX - tx) * 0.04;
+      ty += (mouseY - ty) * 0.04;
+
+      // Drift the primary field upward at watchmaker pace
+      const pos = geom.attributes.position.array;
+      for(let i=0; i<COUNT; i++){
+        const idx = i*3;
+        pos[idx+1] += 0.0015 * speeds[i];                   // slower drift (was 0.0025)
+        pos[idx]   += Math.sin(t + twinklePhase[i]) * 0.0004; // smaller sway (was 0.0006)
+        if(pos[idx+1] > 8) pos[idx+1] = -8;
+      }
+      geom.attributes.position.needsUpdate = true;
+
+      // Gentle breath - couple twinkle into material opacity
+      const breath = Math.sin(t * twinkleSpeed * 1000) * twinkleAmp;
+      mat.opacity  = baseOpacity1 + breath;
+      m2.opacity   = baseOpacity2 + breath * (baseOpacity2 / baseOpacity1);
+
+      // Mouse parallax (preserved - it's free cinematic depth)
+      points.rotation.y  = tx * 0.25 + t * 0.05;
+      points.rotation.x  = -ty * 0.18;
+      points2.rotation.y = tx * 0.10 - t * 0.02;
+      points2.rotation.x = -ty * 0.06;
+
+      renderer.render(scene, camera);
+      scheduleTick();
+    }
+    scheduleTick();
+  }
 
   /* ---------- Scroll-driven parallax on key hero photos ---------- */
   /* Subtle: photo wrapper translates within its overflow:hidden frame
@@ -598,18 +838,8 @@
     window.addEventListener('resize', scheduleParallax, {passive:true});
   }
 
-  /* ---------- Smooth-scroll polyfill enhancement ---------- */
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', (e) => {
-      const id = a.getAttribute('href');
-      if(id.length > 1){
-        const target = document.querySelector(id);
-        if(target){
-          e.preventDefault();
-          target.scrollIntoView({behavior:'smooth', block:'start'});
-        }
-      }
-    });
-  });
+  /* (Smooth-scroll handler removed - CSS `html { scroll-behavior: smooth }`
+     already does this natively, respects prefers-reduced-motion, and keeps
+     URL hash + history working correctly.) */
 
 })();
