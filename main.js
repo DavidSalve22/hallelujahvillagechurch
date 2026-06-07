@@ -36,9 +36,10 @@
   const yEl = document.getElementById('year');
   if(yEl) yEl.textContent = new Date().getFullYear();
 
-  /* ---------- Nav scroll state ---------- */
+  /* ---------- Nav scroll state + scroll progress bar ---------- */
   const nav = document.getElementById('nav');
   const hero = document.getElementById('hero');
+  const progressEl = document.getElementById('scrollProgress');
 
   function updateNav(){
     const y = window.scrollY;
@@ -50,9 +51,17 @@
       if(y < heroBottom) nav.classList.add('is-light');
       else nav.classList.remove('is-light');
     }
+
+    // Scroll progress (21st.dev: Progress Bar pattern)
+    if(progressEl){
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      const p = docH > 0 ? Math.min(1, Math.max(0, y / docH)) : 0;
+      progressEl.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+    }
   }
   updateNav();
   window.addEventListener('scroll', updateNav, {passive:true});
+  window.addEventListener('resize', updateNav, {passive:true});
 
   /* ---------- Mobile drawer ---------- */
   const navToggle = document.getElementById('navToggle');
@@ -168,52 +177,280 @@
     }
   }
 
-  /* ---------- Gallery filter ---------- */
-  const tabs = document.querySelectorAll('.g-tab');
+  /* ---------- Hero crossfade slideshow ---------- */
+  const slides = document.querySelectorAll('.hero-slide');
+  if(slides.length > 1 && !reduceMotion){
+    let slideIdx = 0;
+    setInterval(() => {
+      slides[slideIdx].classList.remove('is-active');
+      slideIdx = (slideIdx + 1) % slides.length;
+      slides[slideIdx].classList.add('is-active');
+    }, 6500);
+  }
+
+  /* ---------- Back to top button ---------- */
+  const fabTop = document.getElementById('fabTop');
+  if(fabTop){
+    function toggleFab(){
+      if(window.scrollY > 600) fabTop.classList.add('is-visible');
+      else fabTop.classList.remove('is-visible');
+    }
+    toggleFab();
+    window.addEventListener('scroll', toggleFab, {passive:true});
+    fabTop.addEventListener('click', () => {
+      window.scrollTo({top:0, behavior: reduceMotion ? 'auto' : 'smooth'});
+    });
+  }
+
+  /* ---------- Scroll-spy active nav highlighting ---------- */
+  const navLinkEls = document.querySelectorAll('.nav-links a[href^="#"]');
+  if(navLinkEls.length && 'IntersectionObserver' in window){
+    const linkMap = new Map();
+    navLinkEls.forEach(a => {
+      const id = a.getAttribute('href').slice(1);
+      const sec = document.getElementById(id);
+      if(sec) linkMap.set(sec, a);
+    });
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        const a = linkMap.get(e.target);
+        if(!a) return;
+        if(e.isIntersecting){
+          navLinkEls.forEach(l => l.classList.remove('is-current'));
+          a.classList.add('is-current');
+        }
+      });
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
+    linkMap.forEach((_, sec) => spy.observe(sec));
+  }
+
+  /* ---------- Tamil / English translation toggle ---------- */
+  const i18n = {
+    ta: {
+      'nav.about': 'பற்றி',
+      'nav.mission': 'நோக்கம்',
+      'nav.ministries': 'ஊழியங்கள்',
+      'nav.beliefs': 'நம்பிக்கைகள்',
+      'nav.sponsor': 'ஆதரவு',
+      'nav.visit': 'வருகை',
+      'nav.gallery': 'படத்தொகுப்பு',
+      'nav.videos': 'காணொளிகள்',
+      'nav.faq': 'கேள்விகள்',
+      'nav.contact': 'தொடர்பு',
+      'nav.donate': 'கொடை',
+      'drawer.sponsor': 'குழந்தைக்கு ஆதரவு',
+      'drawer.visit': 'ஊழியப் பயணம்',
+      'hero.eyebrow': 'பெந்தெகோஸ்தே ஊழியம் · வேலூர், தமிழ்நாடு',
+      'hero.cta.donate': 'கொடை',
+      'hero.cta.sponsor': 'குழந்தைக்கு ஆதரவளியுங்கள்'
+    }
+  };
+
+  const langToggle = document.getElementById('langToggle');
+  function applyLang(lang){
+    document.documentElement.lang = (lang === 'ta') ? 'ta' : 'en';
+    document.body.classList.toggle('lang-ta', lang === 'ta');
+    // Cache original English text once
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      if(!el.dataset.i18nEn) el.dataset.i18nEn = el.textContent;
+      const key = el.dataset.i18n;
+      if(lang === 'ta' && i18n.ta[key]){
+        el.textContent = i18n.ta[key];
+      } else {
+        el.textContent = el.dataset.i18nEn;
+      }
+    });
+    if(langToggle){
+      langToggle.querySelectorAll('[data-lang]').forEach(s => {
+        s.classList.toggle('is-active', s.dataset.lang === lang);
+      });
+    }
+  }
+  let savedLang = 'en';
+  try { savedLang = localStorage.getItem('hvct-lang') || 'en'; } catch(_){}
+  applyLang(savedLang);
+  if(langToggle){
+    langToggle.addEventListener('click', () => {
+      const next = document.body.classList.contains('lang-ta') ? 'en' : 'ta';
+      try { localStorage.setItem('hvct-lang', next); } catch(_){}
+      applyLang(next);
+    });
+  }
+
+  /* ---------- Magnetic Donate button (21st.dev: Magnetic Button) ---------- */
+  /* Subtle damped translate toward cursor; disabled on touch + reduced motion */
+  const donateBtn = document.querySelector('.btn-donate-hero');
+  if(donateBtn && !reduceMotion && window.matchMedia('(hover: hover)').matches){
+    const STRENGTH = 0.22;       // how much of the offset to follow
+    const MAX = 14;              // px hard limit
+    let target = {x:0, y:0};
+    let current = {x:0, y:0};
+    let raf = null;
+    let active = false;
+
+    function tick(){
+      current.x += (target.x - current.x) * 0.18;
+      current.y += (target.y - current.y) * 0.18;
+      donateBtn.style.setProperty('--mx', current.x.toFixed(2) + 'px');
+      donateBtn.style.setProperty('--my', current.y.toFixed(2) + 'px');
+      if(Math.abs(current.x - target.x) > 0.05 || Math.abs(current.y - target.y) > 0.05){
+        raf = requestAnimationFrame(tick);
+      } else {
+        raf = null;
+      }
+    }
+    function start(){ if(!raf) raf = requestAnimationFrame(tick); }
+
+    donateBtn.addEventListener('mouseenter', () => { active = true; donateBtn.classList.add('is-magnetic'); });
+    donateBtn.addEventListener('mousemove', (e) => {
+      if(!active) return;
+      const r = donateBtn.getBoundingClientRect();
+      const cx = r.left + r.width/2;
+      const cy = r.top + r.height/2;
+      target.x = Math.max(-MAX, Math.min(MAX, (e.clientX - cx) * STRENGTH));
+      target.y = Math.max(-MAX, Math.min(MAX, (e.clientY - cy) * STRENGTH));
+      start();
+    });
+    donateBtn.addEventListener('mouseleave', () => {
+      active = false;
+      target.x = 0; target.y = 0;
+      donateBtn.classList.remove('is-magnetic');
+      start();
+    });
+  }
+
+  /* ---------- Spotlight cards (21st.dev: Spotlight Card) ---------- */
+  /* Update --mx/--my CSS vars on mousemove; cards have a radial gradient overlay */
+  function attachSpotlight(selector){
+    if(reduceMotion) return;
+    document.querySelectorAll(selector).forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
+  }
+  attachSpotlight('.ministry-card');
+  attachSpotlight('.give-track');
+
+  /* ---------- Gallery items (no tabs in new design) ---------- */
   const items = document.querySelectorAll('.g-item');
 
-  // Decorative bento sizes for gallery
-  items.forEach((el, i) => {
-    if(i % 7 === 0) el.classList.add('is-tall');
-    if(i % 11 === 3) el.classList.add('is-wide');
+  /* ---------- Lazy fade-in for gallery images ---------- */
+  const galleryImgs = document.querySelectorAll('.g-item img');
+  galleryImgs.forEach(img => {
+    img.classList.add('is-loading');
+    const settle = () => {
+      img.classList.remove('is-loading');
+      img.classList.add('is-loaded');
+      layoutItem(img.closest('.g-item'));
+    };
+    if(img.complete && img.naturalWidth > 0){
+      settle();
+    } else {
+      img.addEventListener('load', settle, {once:true});
+      img.addEventListener('error', () => img.classList.remove('is-loading'), {once:true});
+    }
   });
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      const cat = tab.dataset.filter;
-      items.forEach(item => {
-        const match = cat === 'all' || item.dataset.cat === cat;
-        item.classList.toggle('is-hidden', !match);
-      });
-      if(window.ScrollTrigger) ScrollTrigger.refresh();
+  /* ---------- True Pinterest masonry layout (no crop, no gaps) ---------- */
+  /* Each item snaps into the shortest column. Items are absolutely
+     positioned at the column's current top, sized to the column width
+     and the photo's natural aspect ratio. No row alignment, no gaps. */
+  function layoutGrid(grid){
+    if(!grid || grid.classList.contains('gallery-grid--single')) return;
+    const cs = getComputedStyle(grid);
+    const cols = parseInt(cs.getPropertyValue('--cols')) || 4;
+    const gap = parseFloat(cs.getPropertyValue('--gap')) || 14;
+    const gridW = grid.getBoundingClientRect().width;
+    if(!gridW) return;
+    const colW = (gridW - gap * (cols - 1)) / cols;
+    const colTops = new Array(cols).fill(0);
+    const items = grid.querySelectorAll('.g-item');
+    items.forEach(item => {
+      const img = item.querySelector('img');
+      if(!img || !img.naturalWidth || !img.naturalHeight) return;
+      const itemH = (img.naturalHeight / img.naturalWidth) * colW;
+      // Find the shortest column
+      let minCol = 0;
+      for(let i = 1; i < cols; i++){
+        if(colTops[i] < colTops[minCol] - 0.5) minCol = i;
+      }
+      item.style.width = colW + 'px';
+      item.style.height = itemH + 'px';
+      item.style.left = (minCol * (colW + gap)) + 'px';
+      item.style.top = colTops[minCol] + 'px';
+      colTops[minCol] += itemH + gap;
     });
-  });
+    grid.style.height = Math.max(...colTops, 0) + 'px';
+  }
+  function layoutItem(item){
+    const grid = item.closest('.gallery-grid');
+    if(grid) layoutGrid(grid);
+  }
+  function layoutAll(){
+    document.querySelectorAll('.gallery-grid:not(.gallery-grid--single)').forEach(layoutGrid);
+  }
+  layoutAll();
+  let layoutRaf = null;
+  window.addEventListener('resize', () => {
+    if(layoutRaf) cancelAnimationFrame(layoutRaf);
+    layoutRaf = requestAnimationFrame(layoutAll);
+  }, {passive:true});
 
-  /* ---------- Lightbox ---------- */
+  /* ---------- Upgraded lightbox ---------- */
   const lb = document.getElementById('lightbox');
   const lbImg = document.getElementById('lbImg');
   const lbClose = document.getElementById('lbClose');
   const lbPrev = document.getElementById('lbPrev');
   const lbNext = document.getElementById('lbNext');
+  const lbSection = document.getElementById('lbSection');
+  const lbCount = document.getElementById('lbCount');
+  const lbCaption = document.getElementById('lbCaption');
   let lbIndex = 0;
   let lbList = [];
 
   function openLightbox(idx){
     lbList = Array.from(document.querySelectorAll('.g-item:not(.is-hidden)'));
     lbIndex = idx;
-    showLb();
     lb.classList.add('is-open');
     lb.setAttribute('aria-hidden','false');
     document.body.style.overflow = 'hidden';
+    showLb(true);
   }
-  function showLb(){
+  function showLb(initial){
     const item = lbList[lbIndex];
     if(!item) return;
-    lbImg.src = item.getAttribute('href');
-    const altImg = item.querySelector('img');
-    lbImg.alt = altImg ? altImg.alt : '';
+    // Crossfade: take down, swap, fade back up
+    lbImg.classList.remove('is-loaded');
+    const newSrc = item.getAttribute('href');
+    const alt = item.querySelector('img');
+    // Update meta now (instant)
+    const sectionEl = item.closest('.gallery-section');
+    const sectionName = sectionEl ? (sectionEl.dataset.section || sectionEl.querySelector('.gallery-section-title')?.textContent || '') : '';
+    if(lbSection) lbSection.textContent = sectionName;
+    if(lbCount) lbCount.textContent = String(lbIndex + 1).padStart(2,'0') + ' / ' + String(lbList.length).padStart(2,'0');
+    if(lbCaption) lbCaption.textContent = item.dataset.caption || (alt ? alt.alt : '');
+
+    const swap = () => {
+      lbImg.src = newSrc;
+      lbImg.alt = alt ? alt.alt : '';
+      const onload = () => {
+        requestAnimationFrame(() => lbImg.classList.add('is-loaded'));
+        lbImg.removeEventListener('load', onload);
+      };
+      if(lbImg.complete && lbImg.naturalWidth > 0){
+        onload();
+      } else {
+        lbImg.addEventListener('load', onload);
+      }
+    };
+    if(initial){
+      swap();
+    } else {
+      setTimeout(swap, 220);
+    }
   }
   function closeLb(){
     lb.classList.remove('is-open');
@@ -223,13 +460,12 @@
   function navLb(d){
     if(!lbList.length) return;
     lbIndex = (lbIndex + d + lbList.length) % lbList.length;
-    showLb();
+    showLb(false);
   }
 
-  items.forEach((it, i) => {
+  items.forEach((it) => {
     it.addEventListener('click', (e) => {
       e.preventDefault();
-      // recompute index against visible list
       const visible = Array.from(document.querySelectorAll('.g-item:not(.is-hidden)'));
       const idx = visible.indexOf(it);
       openLightbox(idx >= 0 ? idx : 0);
@@ -238,7 +474,10 @@
   if(lbClose) lbClose.addEventListener('click', closeLb);
   if(lbPrev) lbPrev.addEventListener('click', () => navLb(-1));
   if(lbNext) lbNext.addEventListener('click', () => navLb(1));
-  if(lb) lb.addEventListener('click', (e) => { if(e.target === lb) closeLb(); });
+  if(lb) lb.addEventListener('click', (e) => {
+    // Close only when clicking the backdrop, not when clicking image/controls
+    if(e.target === lb || e.target.classList.contains('lb-stage') || e.target.classList.contains('lb-bottom')) closeLb();
+  });
   document.addEventListener('keydown', (e) => {
     if(!lb.classList.contains('is-open')) return;
     if(e.key === 'Escape') closeLb();
@@ -246,141 +485,117 @@
     if(e.key === 'ArrowRight') navLb(1);
   });
 
-  /* ---------- Copy PayPal email ---------- */
-  const copyBtn = document.getElementById('copyBtn');
-  const paypalEmail = document.getElementById('paypalEmail');
-  if(copyBtn && paypalEmail){
-    copyBtn.addEventListener('click', async () => {
-      const text = paypalEmail.textContent.trim();
-      try{
-        await navigator.clipboard.writeText(text);
-      } catch(_){
-        const ta = document.createElement('textarea');
-        ta.value = text; document.body.appendChild(ta); ta.select();
-        try { document.execCommand('copy'); } catch(__){}
-        document.body.removeChild(ta);
+  /* Swipe gestures for lightbox on touch devices */
+  if(lb){
+    let touchX = 0, touchY = 0, touching = false;
+    lb.addEventListener('touchstart', (e) => {
+      if(!lb.classList.contains('is-open') || e.touches.length !== 1) return;
+      touchX = e.touches[0].clientX;
+      touchY = e.touches[0].clientY;
+      touching = true;
+    }, {passive:true});
+    lb.addEventListener('touchend', (e) => {
+      if(!touching) return;
+      touching = false;
+      const dx = e.changedTouches[0].clientX - touchX;
+      const dy = e.changedTouches[0].clientY - touchY;
+      if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){
+        navLb(dx < 0 ? 1 : -1);
+      } else if(dy > 80 && Math.abs(dy) > Math.abs(dx)){
+        // Swipe down to close
+        closeLb();
       }
-      copyBtn.classList.add('is-copied');
-      const label = copyBtn.querySelector('.copy-label');
-      const old = label ? label.textContent : '';
-      if(label) label.textContent = 'Copied';
+    });
+  }
+
+  /* ---------- Generalized copy buttons ---------- */
+  async function copyText(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch(_){
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch(__){}
+      document.body.removeChild(ta);
+      return ok;
+    }
+  }
+  document.querySelectorAll('.copy-btn[data-copy-target]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const text = btn.dataset.copyTarget;
+      const ok = await copyText(text);
+      if(!ok) return;
+      btn.classList.add('is-copied');
+      const labelEl = btn.querySelector('span');
+      const old = labelEl ? labelEl.textContent : '';
+      if(labelEl) labelEl.textContent = 'Copied';
       setTimeout(() => {
-        copyBtn.classList.remove('is-copied');
-        if(label) label.textContent = old || 'Copy';
+        btn.classList.remove('is-copied');
+        if(labelEl) labelEl.textContent = old || 'Copy';
       }, 1800);
     });
-  }
+  });
 
-  /* ---------- Three.js hero — drifting points of light ---------- */
-  const canvas = document.getElementById('heroCanvas');
-  if(canvas && window.THREE && !reduceMotion){
-    initHeroThree(canvas);
-  }
-
-  function initHeroThree(canvasEl){
-    const THREE = window.THREE;
-    const renderer = new THREE.WebGLRenderer({canvas: canvasEl, alpha:true, antialias:true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
-    camera.position.z = 8;
-
-    function resize(){
-      const w = canvasEl.clientWidth;
-      const h = canvasEl.clientHeight;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+  /* ---------- Cinematic video player: click-to-load ---------- */
+  /* Videos don't download until the user actually presses play.
+     Keeps the page lightweight - posters are already on the page. */
+  document.querySelectorAll('.video-stage').forEach(stage => {
+    function play(){
+      if(stage.dataset.playing) return;
+      stage.dataset.playing = 'true';
+      stage.classList.add('is-playing');
+      const src = stage.dataset.video;
+      const v = document.createElement('video');
+      v.src = src;
+      v.controls = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline', '');
+      v.preload = 'auto';
+      stage.appendChild(v);
+      // Try to play (gesture-allowed on click)
+      v.play().catch(()=>{ /* user can press play on the native controls */ });
     }
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Star/sparkle field
-    const COUNT = 320;
-    const positions = new Float32Array(COUNT * 3);
-    const speeds = new Float32Array(COUNT);
-    for(let i=0; i<COUNT; i++){
-      positions[i*3]   = (Math.random() - 0.5) * 22;
-      positions[i*3+1] = (Math.random() - 0.5) * 14;
-      positions[i*3+2] = (Math.random() - 0.5) * 10;
-      speeds[i] = 0.3 + Math.random() * 0.7;
-    }
-
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    // Round sprite texture
-    const c = document.createElement('canvas');
-    c.width = 64; c.height = 64;
-    const ctx = c.getContext('2d');
-    const grad = ctx.createRadialGradient(32,32,0, 32,32,32);
-    grad.addColorStop(0, 'rgba(255,225,170,1)');
-    grad.addColorStop(0.4, 'rgba(214,168,104,0.55)');
-    grad.addColorStop(1, 'rgba(214,168,104,0)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0,0,64,64);
-    const tex = new THREE.CanvasTexture(c);
-
-    const mat = new THREE.PointsMaterial({
-      size: 0.18,
-      map: tex,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      opacity: 0.95
+    stage.addEventListener('click', play);
+    stage.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); play(); }
     });
-    const points = new THREE.Points(geom, mat);
-    scene.add(points);
+  });
 
-    // Secondary slow ring of larger soft particles
-    const COUNT2 = 60;
-    const p2 = new Float32Array(COUNT2 * 3);
-    for(let i=0;i<COUNT2;i++){
-      p2[i*3] = (Math.random()-0.5)*18;
-      p2[i*3+1] = (Math.random()-0.5)*10;
-      p2[i*3+2] = -2 - Math.random()*4;
-    }
-    const g2 = new THREE.BufferGeometry();
-    g2.setAttribute('position', new THREE.BufferAttribute(p2, 3));
-    const m2 = new THREE.PointsMaterial({
-      size: 0.6, map: tex, transparent:true, depthWrite:false,
-      blending: THREE.AdditiveBlending, opacity: 0.5
+  /* ---------- Scroll-driven parallax on key hero photos ---------- */
+  /* Subtle: photo wrapper translates within its overflow:hidden frame
+     at ~16% the scroll speed of the surrounding text. */
+  const parallaxFrames = Array.from(document.querySelectorAll('.parallax-frame'));
+  let parallaxRaf = null;
+  function updateParallax(){
+    if(reduceMotion) return;
+    const vh = window.innerHeight;
+    parallaxFrames.forEach(frame => {
+      const inner = frame.querySelector('.parallax-inner');
+      if(!inner) return;
+      const rect = frame.getBoundingClientRect();
+      if(rect.bottom < -100 || rect.top > vh + 100){ return; }
+      // Progress: 0 when frame entering bottom of viewport, 1 when leaving top.
+      const progress = (vh - rect.top) / (vh + rect.height);
+      // Translate range: ~10% of the frame height total swing (subtle).
+      const translateY = (0.5 - progress) * rect.height * 0.18;
+      inner.style.transform = 'translate3d(0,' + translateY.toFixed(1) + 'px,0)';
     });
-    const points2 = new THREE.Points(g2, m2);
-    scene.add(points2);
-
-    let mouseX = 0, mouseY = 0, tx=0, ty=0;
-    window.addEventListener('mousemove', (e) => {
-      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-    }, {passive:true});
-
-    let t = 0;
-    function tick(){
-      t += 0.003;
-      // ease mouse
-      tx += (mouseX - tx) * 0.04;
-      ty += (mouseY - ty) * 0.04;
-
-      const pos = geom.attributes.position.array;
-      for(let i=0; i<COUNT; i++){
-        const idx = i*3;
-        pos[idx+1] += 0.0025 * speeds[i];           // drift upward
-        pos[idx]   += Math.sin(t + i) * 0.0006;     // sway sideways
-        if(pos[idx+1] > 7) pos[idx+1] = -7;          // wrap
-      }
-      geom.attributes.position.needsUpdate = true;
-
-      points.rotation.y = tx * 0.25 + t * 0.05;
-      points.rotation.x = -ty * 0.18;
-      points2.rotation.y = tx * 0.10 - t * 0.02;
-      points2.rotation.x = -ty * 0.06;
-
-      renderer.render(scene, camera);
-      requestAnimationFrame(tick);
-    }
-    tick();
+  }
+  function scheduleParallax(){
+    if(parallaxRaf) return;
+    parallaxRaf = requestAnimationFrame(() => {
+      parallaxRaf = null;
+      updateParallax();
+    });
+  }
+  if(parallaxFrames.length && !reduceMotion){
+    updateParallax();
+    window.addEventListener('scroll', scheduleParallax, {passive:true});
+    window.addEventListener('resize', scheduleParallax, {passive:true});
   }
 
   /* ---------- Smooth-scroll polyfill enhancement ---------- */

@@ -7,6 +7,26 @@
 <title>Hallelujah Village Church Trust — Carrying the Gospel to the villages of Tamil Nadu</title>
 <meta name="description" content="Hallelujah Village Church Trust (HVCT), led by Pastor T. John Ravi Chandran, is a Pentecostal mission planting churches and serving widows, orphans and rural pastors in Vellore, Tamil Nadu." />
 
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="apple-touch-icon" href="favicon.svg" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Hallelujah Village Church Trust" />
+<meta property="og:title" content="Carrying the Gospel to the villages of Tamil Nadu" />
+<meta property="og:description" content="A Pentecostal mission in Vellore, Tamil Nadu — planting churches and serving widows, orphans, and rural pastors. Led by Pastor T. John Ravi Chandran." />
+<meta property="og:image" content="og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Hallelujah Village Church Trust — Carrying the Gospel to the villages of Tamil Nadu" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Carrying the Gospel to the villages of Tamil Nadu" />
+<meta name="twitter:description" content="A Pentecostal mission in Vellore, Tamil Nadu — planting churches and serving widows, orphans, and rural pastors." />
+<meta name="twitter:image" content="og-image.jpg" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -14,6 +34,17 @@
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+<!-- Cinematic ambient background: drifting gold light orbs (fixed) -->
+<div class="cinematic-bg" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
+
+<!-- Scroll progress (sits above everything) -->
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
 <!-- Page loader -->
 <div class="loader" id="loader" aria-hidden="true">
@@ -64,15 +95,20 @@
     </span>
   </a>
   <nav class="nav-links" aria-label="Primary">
-    <a href="#about">About</a>
-    <a href="#mission">Mission</a>
-    <a href="#ministries">Ministries</a>
-    <a href="#beliefs">Beliefs</a>
-    <a href="#sponsor">Sponsor</a>
-    <a href="#visit">Visit</a>
-    <a href="#gallery">Gallery</a>
-    <a href="#contact">Contact</a>
+    <a href="#about" data-i18n="nav.about">About</a>
+    <a href="#mission" data-i18n="nav.mission">Mission</a>
+    <a href="#ministries" data-i18n="nav.ministries">Ministries</a>
+    <a href="#beliefs" data-i18n="nav.beliefs">Beliefs</a>
+    <a href="#sponsor" data-i18n="nav.sponsor">Sponsor</a>
+    <a href="#visit" data-i18n="nav.visit">Visit</a>
+    <a href="#gallery" data-i18n="nav.gallery">Gallery</a>
+    <a href="#videos" data-i18n="nav.videos">Videos</a>
+    <a href="#faq" data-i18n="nav.faq">FAQ</a>
+    <a href="#contact" data-i18n="nav.contact">Contact</a>
   </nav>
+  <button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">
+    <span data-lang="en">EN</span><span class="lang-sep" aria-hidden="true">/</span><span data-lang="ta">த</span>
+  </button>
   <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
     <span></span><span></span><span></span>
   </button>
@@ -80,30 +116,40 @@
 
 <!-- Mobile drawer -->
 <div class="drawer" id="drawer" aria-hidden="true">
-  <a href="#about">About</a>
-  <a href="#mission">Mission</a>
-  <a href="#ministries">Ministries</a>
-  <a href="#beliefs">Beliefs</a>
-  <a href="#sponsor">Sponsor a Child</a>
-  <a href="#visit">Mission Trip</a>
-  <a href="#gallery">Gallery</a>
-  <a href="#contact">Contact</a>
-  <a href="#donate" class="btn btn-gold">Donate</a>
+  <a href="#about" data-i18n="nav.about">About</a>
+  <a href="#mission" data-i18n="nav.mission">Mission</a>
+  <a href="#ministries" data-i18n="nav.ministries">Ministries</a>
+  <a href="#beliefs" data-i18n="nav.beliefs">Beliefs</a>
+  <a href="#sponsor" data-i18n="drawer.sponsor">Sponsor a Child</a>
+  <a href="#visit" data-i18n="drawer.visit">Mission Trip</a>
+  <a href="#gallery" data-i18n="nav.gallery">Gallery</a>
+  <a href="#videos" data-i18n="nav.videos">Videos</a>
+  <a href="#faq" data-i18n="nav.faq">FAQ</a>
+  <a href="#contact" data-i18n="nav.contact">Contact</a>
+  <a href="#donate" class="drawer-donate" data-i18n="nav.donate">Donate</a>
 </div>
 
 <main id="top">
 
 <!-- HERO -->
 <section class="hero" id="hero">
-  <canvas id="heroCanvas" aria-hidden="true"></canvas>
+  <!-- Cinematic crossfade slideshow (behind stars) -->
+  <div class="hero-slideshow" aria-hidden="true">
+    <div class="hero-slide is-active" style="background-image:url('photos/teach-01.webp')"></div>
+    <div class="hero-slide" style="background-image:url('photos/meet-01.webp')"></div>
+    <div class="hero-slide" style="background-image:url('photos/meet-03.webp')"></div>
+    <div class="hero-slide" style="background-image:url('photos/blind-01.webp')"></div>
+    <div class="hero-slide" style="background-image:url('photos/meet-10.webp')"></div>
+  </div>
+  <div class="hero-vignette" aria-hidden="true"></div>
   <div class="hero-veil" aria-hidden="true"></div>
 
   <div class="hero-inner">
-    <p class="eyebrow reveal">Pentecostal Mission · Vellore, Tamil Nadu</p>
+    <p class="eyebrow reveal" data-i18n="hero.eyebrow">Pentecostal Mission · Vellore, Tamil Nadu</p>
     <h1 class="hero-title">
       <span class="line reveal-line"><span>Carrying the Gospel</span></span>
       <span class="line reveal-line"><span>to the villages</span></span>
-      <span class="line reveal-line"><span>of <em>Tamil Nadu.</em></span></span>
+      <span class="line reveal-line"><span>of <em class="shine">Tamil Nadu.</em></span></span>
     </h1>
     <p class="hero-sub reveal">
       Hallelujah Village Church Trust is planting churches and serving the least
@@ -121,13 +167,13 @@
         <span class="btn-donate-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 5.65-7 10-7 10z"/></svg>
         </span>
-        <span class="btn-donate-label">Donate</span>
+        <span class="btn-donate-label" data-i18n="nav.donate">Donate</span>
         <span class="btn-donate-arrow" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </span>
       </a>
       <a href="#sponsor" class="btn btn-ghost btn-lg">
-        <span>Sponsor a Child</span>
+        <span data-i18n="hero.cta.sponsor">Sponsor a Child</span>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
     </div>
@@ -186,13 +232,60 @@
     </div>
 
     <div class="col-media">
-      <figure class="stacked-frame reveal-rise">
-        <img src="4591805.jpg" alt="Pastor T. John Ravi Chandran preaching" loading="lazy" />
-        <figcaption>“God is Spirit, and those who worship Him must worship in Spirit and in Truth.”</figcaption>
+      <figure class="solo-frame parallax-frame reveal-rise">
+        <div class="parallax-inner">
+          <img decoding="async" src="photos/meet-01.webp" alt="The HVCT network of village pastors gathered outside the church" loading="lazy" />
+        </div>
+        <figcaption>“A brotherhood of faithful Christians, united in the name of Jesus Christ.”</figcaption>
       </figure>
-      <figure class="floating-frame reveal-rise">
-        <img src="1426702.jpg" alt="HVCT congregation in worship" loading="lazy" />
+    </div>
+  </div>
+</section>
+
+<!-- MEET PASTOR JOHN -->
+<section class="section pastor" id="pastor">
+  <div class="container two-col">
+    <div class="col-media">
+      <figure class="pastor-portrait parallax-frame reveal-rise">
+        <div class="parallax-inner">
+          <img decoding="async" src="photos/teach-01.webp" alt="Pastor T. John Ravi Chandran preaching at the village pastors meeting" loading="lazy" />
+        </div>
+        <span class="pastor-portrait-frame" aria-hidden="true"></span>
+        <figcaption>
+          <span class="pastor-portrait-name">Pastor T. John Ravi Chandran</span>
+          <span class="pastor-portrait-role">Founder &amp; Pastor, HVCT</span>
+        </figcaption>
       </figure>
+    </div>
+    <div class="col-text">
+      <p class="eyebrow reveal">Meet the Pastor</p>
+      <h2 class="display reveal">"To go where the Gospel has not yet gone."</h2>
+      <p class="lede reveal">
+        Pastor T. John Ravi Chandran has walked the dusty roads of Vellore and
+        Tiruvannamalai districts for years, planting churches in villages where
+        no preacher had set foot, and gathering a brotherhood of rural pastors
+        who carry the same fire.
+      </p>
+      <p class="reveal">
+        He carries one verse the way a soldier carries his orders &mdash;
+        <em>"Go ye into all the world, and preach the gospel to every creature"</em>
+        (Mark 16:15). It is why HVCT exists. It is why he keeps going back to the
+        Gipsy Camp at dusk, why he sits on the floor with widows, why he teaches
+        the village pastors who teach their own. The mission is the man, and the
+        man is faithful to the call.
+      </p>
+      <p class="reveal">
+        He invites cross-cultural missionaries, teachers, nurses and intercessors
+        to come and see for themselves &mdash; to walk a few of those roads
+        alongside him.
+      </p>
+      <div class="cta-row reveal">
+        <a class="btn btn-navy btn-lg" href="#visit">
+          <span>Visit the mission</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-link" href="https://wa.me/919842891578" target="_blank" rel="noopener">WhatsApp Pastor John &rarr;</a>
+      </div>
     </div>
   </div>
 </section>
@@ -367,13 +460,22 @@
   </div>
 </section>
 
+<!-- EDITORIAL BREATHING MOMENT -->
+<aside class="editorial-quote reveal" aria-hidden="false">
+  <div class="container">
+    <p class="editorial-quote-mark">“</p>
+    <blockquote>
+      Go ye into all the world, and preach the gospel to every creature.
+    </blockquote>
+    <cite>— Mark 16:15</cite>
+  </div>
+</aside>
+
 <!-- SPONSOR A CHILD -->
 <section class="section sponsor split" id="sponsor">
-  <div class="split-media reveal-rise">
-    <img src="3622150.jpg" alt="Children of HVCT performing" loading="lazy" />
-    <div class="split-media-grid">
-      <img src="5797476.jpg" alt="HVCT Sunday school dance" loading="lazy" />
-      <img src="3863786.jpg" alt="HVCT children in worship" loading="lazy" />
+  <div class="split-media parallax-frame reveal-rise">
+    <div class="parallax-inner">
+      <img decoding="async" src="photos/vbs-03.webp" alt="VBS senior class dance and skit" loading="lazy" />
     </div>
   </div>
   <div class="split-text">
@@ -426,53 +528,385 @@
       </div>
     </div>
     <div class="col-media">
-      <figure class="stacked-frame reveal-rise">
-        <img src="5281557.jpg" alt="HVCT outside the church building" loading="lazy" />
-      </figure>
-      <figure class="floating-frame floating-frame--right reveal-rise">
-        <img src="4818218.jpg" alt="HVCT community meal preparation" loading="lazy" />
+      <figure class="solo-frame parallax-frame reveal-rise">
+        <div class="parallax-inner">
+          <img decoding="async" src="photos/gipsy-07.webp" alt="HVCT Gipsy Camp outreach at dusk" loading="lazy" />
+        </div>
       </figure>
     </div>
   </div>
 </section>
+
+<!-- EDITORIAL BREATHING MOMENT -->
+<aside class="editorial-word reveal" aria-hidden="false">
+  <div class="container">
+    <p class="editorial-word-eyebrow">Where we serve</p>
+    <p class="editorial-word-text"><span>V</span><span>E</span><span>L</span><span>L</span><span>O</span><span>R</span><span>E</span></p>
+    <p class="editorial-word-foot">Tamil Nadu · South India</p>
+  </div>
+</aside>
 
 <!-- GALLERY -->
 <section class="section gallery" id="gallery">
   <div class="container">
     <p class="eyebrow reveal">Gallery</p>
     <h2 class="display reveal">Faces, places and faithful witness.</h2>
+    <p class="lede reveal">Moments from our village ministry — from the Gipsy Camp outreach at dusk to Vacation Bible School with our children.</p>
 
-    <div class="gallery-tabs reveal" role="tablist">
-      <button class="g-tab active" data-filter="all" role="tab">All</button>
-      <button class="g-tab" data-filter="church" role="tab">Church &amp; Congregation</button>
-      <button class="g-tab" data-filter="children" role="tab">Children</button>
-      <button class="g-tab" data-filter="mission" role="tab">Mission &amp; Outreach</button>
-      <button class="g-tab" data-filter="team" role="tab">Pastor &amp; Team</button>
+    <!-- Blind Family Visit (editorial single-image feature) -->
+    <section class="gallery-section gallery-section--feature reveal" data-section="Blind Family Visit">
+      <div class="gallery-section-head">
+        <div>
+          <h3 class="gallery-section-title">Blind Family Visit</h3>
+        </div>
+        <p class="gallery-section-caption">Visiting a blind family in their home with groceries and prayer.</p>
+      </div>
+      <a class="g-feature" href="photos/blind-01.webp" data-caption="Visiting a blind family with groceries and prayer">
+        <figure class="parallax-frame">
+          <div class="parallax-inner">
+            <img decoding="async" src="photos/blind-01.webp" alt="Visiting a blind family with groceries" loading="lazy"/>
+          </div>
+          <figcaption>
+            <span class="g-feature-eyebrow">From the visit</span>
+            <span class="g-feature-quote">"Visiting a blind family in their home with groceries and prayer."</span>
+          </figcaption>
+        </figure>
+      </a>
+    </section>
+
+    <div class="gallery-divider" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22">
+        <rect x="11" y="5" width="2" height="14" rx=".5" fill="#c9a84c"/>
+        <rect x="7" y="9" width="10" height="2" rx=".5" fill="#c9a84c"/>
+      </svg>
     </div>
 
-    <div class="gallery-grid" id="galleryGrid">
-      <a class="g-item" data-cat="team" href="504928.jpg"><img src="504928.jpg" alt="Pastor T. John Ravi Chandran" loading="lazy" /></a>
-      <a class="g-item" data-cat="church" href="1426702.jpg"><img src="1426702.jpg" alt="HVCT congregation in worship" loading="lazy" /></a>
-      <a class="g-item" data-cat="church" href="2487886.jpg"><img src="2487886.jpg" alt="HVCT worship service" loading="lazy" /></a>
-      <a class="g-item" data-cat="team" href="7493592.jpg"><img src="7493592.jpg" alt="Pastor preaching" loading="lazy" /></a>
-      <a class="g-item" data-cat="children" href="3622150.jpg"><img src="3622150.jpg" alt="Children performing" loading="lazy" /></a>
-      <a class="g-item" data-cat="church" href="2323669.jpg"><img src="2323669.jpg" alt="Congregation seated" loading="lazy" /></a>
-      <a class="g-item" data-cat="mission" href="4818218.jpg"><img src="4818218.jpg" alt="Community meal preparation" loading="lazy" /></a>
-      <a class="g-item" data-cat="children" href="5797476.jpg"><img src="5797476.jpg" alt="Sunday school dance" loading="lazy" /></a>
-      <a class="g-item" data-cat="church" href="2749442.jpg"><img src="2749442.jpg" alt="Women's prayer gathering" loading="lazy" /></a>
-      <a class="g-item" data-cat="team" href="7398202.jpg"><img src="7398202.jpg" alt="Pastor portrait" loading="lazy" /></a>
-      <a class="g-item" data-cat="children" href="681269.jpg"><img src="681269.jpg" alt="Christmas program" loading="lazy" /></a>
-      <a class="g-item" data-cat="church" href="9767483.jpg"><img src="9767483.jpg" alt="Worship with raised hands" loading="lazy" /></a>
-      <a class="g-item" data-cat="team" href="4591805.jpg"><img src="4591805.jpg" alt="Pastor at pulpit" loading="lazy" /></a>
-      <a class="g-item" data-cat="children" href="8786181.jpg"><img src="8786181.jpg" alt="Children Christmas dance" loading="lazy" /></a>
-      <a class="g-item" data-cat="church" href="5237022.jpg"><img src="5237022.jpg" alt="HVCT prayer service" loading="lazy" /></a>
-      <a class="g-item" data-cat="team" href="5830008.jpg"><img src="5830008.jpg" alt="HVCT ministry team" loading="lazy" /></a>
-      <a class="g-item" data-cat="church" href="5281557.jpg"><img src="5281557.jpg" alt="Church building with congregation" loading="lazy" /></a>
-      <a class="g-item" data-cat="team" href="4725694.jpg"><img src="4725694.jpg" alt="HVCT couple at the front" loading="lazy" /></a>
-      <a class="g-item" data-cat="children" href="3863786.jpg"><img src="3863786.jpg" alt="Children in worship" loading="lazy" /></a>
-      <a class="g-item" data-cat="team" href="7499770.jpg"><img src="7499770.jpg" alt="Pastor preaching" loading="lazy" /></a>
-      <a class="g-item" data-cat="mission" href="827204.jpg"><img src="827204.jpg" alt="HVCT outreach team outside" loading="lazy" /></a>
-      <a class="g-item" data-cat="team" href="3151973.jpg"><img src="3151973.jpg" alt="HVCT team member portrait" loading="lazy" /></a>
+    <!-- Gipsy Camp Outreach -->
+    <section class="gallery-section gallery-section--feature reveal" data-section="Gipsy Camp Outreach">
+      <div class="gallery-section-head">
+        <div>
+          <h3 class="gallery-section-title">Gipsy Camp Outreach</h3>
+        </div>
+        <p class="gallery-section-caption">Sharing the Gospel, distributing food, and praying with the Gipsy peoples at Gipsy Camp.</p>
+      </div>
+      <a class="g-feature" href="photos/gipsy-07.webp" data-caption="Pastor John preaching to the families at dusk">
+        <figure class="parallax-frame">
+          <div class="parallax-inner">
+            <img decoding="async" src="photos/gipsy-07.webp" alt="Pastor preaching at Gipsy Camp at dusk" loading="lazy"/>
+          </div>
+          <figcaption>
+            <span class="g-feature-eyebrow">Gipsy Camp · April 2026</span>
+            <span class="g-feature-quote">"Pastor John preaching to the families at dusk."</span>
+          </figcaption>
+        </figure>
+      </a>
+      <div class="gallery-grid">
+        <a class="g-item" href="photos/gipsy-01.webp" data-caption="Gipsy Camp at sunset"><img decoding="async" src="photos/gipsy-01.webp" alt="Gipsy Camp at sunset" loading="lazy"/></a>
+        <a class="g-item" href="photos/gipsy-04.webp" data-caption="Pastor John addressing the gathering"><img decoding="async" src="photos/gipsy-04.webp" alt="Pastor John at Gipsy Camp" loading="lazy"/></a>
+        <a class="g-item" href="photos/gipsy-02.webp" data-caption="Outreach team at the camp"><img decoding="async" src="photos/gipsy-02.webp" alt="Gipsy Camp outreach" loading="lazy"/></a>
+        <a class="g-item" href="photos/gipsy-08.webp" data-caption="Praying with the Gipsy families"><img decoding="async" src="photos/gipsy-08.webp" alt="Praying with Gipsy families" loading="lazy"/></a>
+        <a class="g-item" href="photos/gipsy-03.webp" data-caption="Sharing food at Gipsy Camp"><img decoding="async" src="photos/gipsy-03.webp" alt="Sharing food at Gipsy Camp" loading="lazy"/></a>
+        <a class="g-item" href="photos/gipsy-05.webp" data-caption="Gathering of the camp"><img decoding="async" src="photos/gipsy-05.webp" alt="Gipsy Camp gathering" loading="lazy"/></a>
+        <a class="g-item" href="photos/gipsy-06.webp" data-caption="Ministering to the people"><img decoding="async" src="photos/gipsy-06.webp" alt="Gipsy Camp ministry" loading="lazy"/></a>
+      </div>
+    </section>
+
+    <div class="gallery-divider" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22">
+        <rect x="11" y="5" width="2" height="14" rx=".5" fill="#c9a84c"/>
+        <rect x="7" y="9" width="10" height="2" rx=".5" fill="#c9a84c"/>
+      </svg>
+    </div>
+
+    <!-- Pastors Meeting -->
+    <section class="gallery-section gallery-section--feature reveal" data-section="Pastors Meeting">
+      <div class="gallery-section-head">
+        <div>
+          <h3 class="gallery-section-title">Pastors Meeting</h3>
+        </div>
+        <p class="gallery-section-caption">Our network of village pastors gathered together, with a shared meal.</p>
+      </div>
+      <a class="g-feature" href="photos/meet-01.webp" data-caption="The pastors network outside the church">
+        <figure class="parallax-frame">
+          <div class="parallax-inner">
+            <img decoding="async" src="photos/meet-01.webp" alt="Network of pastors gathered outside the church" loading="lazy"/>
+          </div>
+          <figcaption>
+            <span class="g-feature-eyebrow">The Brotherhood</span>
+            <span class="g-feature-quote">"The pastors network gathered in white outside the village church."</span>
+          </figcaption>
+        </figure>
+      </a>
+      <div class="gallery-grid">
+        <a class="g-item" href="photos/meet-03.webp" data-caption="Sharing a meal together"><img decoding="async" src="photos/meet-03.webp" alt="Pastors sharing a meal together" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-10.webp" data-caption="Pastors kneeling in prayer"><img decoding="async" src="photos/meet-10.webp" alt="Pastors kneeling in prayer" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-06.webp" data-caption="A blessing exchanged"><img decoding="async" src="photos/meet-06.webp" alt="Pastors at the meeting" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-02.webp" data-caption="The gathering"><img decoding="async" src="photos/meet-02.webp" alt="Pastors gathered" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-04.webp" data-caption="The meal continues"><img decoding="async" src="photos/meet-04.webp" alt="Sharing a meal" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-07.webp" data-caption="Pastors in fellowship"><img decoding="async" src="photos/meet-07.webp" alt="Pastors fellowship" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-12.webp" data-caption="A moment of prayer"><img decoding="async" src="photos/meet-12.webp" alt="Pastors in prayer" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-05.webp" data-caption="The meeting"><img decoding="async" src="photos/meet-05.webp" alt="Pastors meeting" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-08.webp" data-caption="Network gathering"><img decoding="async" src="photos/meet-08.webp" alt="Network gathering" loading="lazy"/></a>
+        <a class="g-item" href="photos/meet-13.webp" data-caption="The brotherhood"><img decoding="async" src="photos/meet-13.webp" alt="Pastors meeting" loading="lazy"/></a>
+      </div>
+    </section>
+
+    <div class="gallery-divider" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22">
+        <rect x="11" y="5" width="2" height="14" rx=".5" fill="#c9a84c"/>
+        <rect x="7" y="9" width="10" height="2" rx=".5" fill="#c9a84c"/>
+      </svg>
+    </div>
+
+    <!-- Pastors Teaching -->
+    <section class="gallery-section gallery-section--feature reveal" data-section="Pastors Teaching">
+      <div class="gallery-section-head">
+        <div>
+          <h3 class="gallery-section-title">Pastors Teaching</h3>
+        </div>
+        <p class="gallery-section-caption">Pastor John sharing God's Word at the village pastors meeting.</p>
+      </div>
+      <a class="g-feature" href="photos/teach-01.webp" data-caption="Pastor John at the pulpit, mic in hand">
+        <figure class="parallax-frame">
+          <div class="parallax-inner">
+            <img decoding="async" src="photos/teach-01.webp" alt="Pastor John preaching with cross" loading="lazy"/>
+          </div>
+          <figcaption>
+            <span class="g-feature-eyebrow">April 2026 · The Pulpit</span>
+            <span class="g-feature-quote">"Pastor John preaching at the village pastors meeting."</span>
+          </figcaption>
+        </figure>
+      </a>
+      <div class="gallery-grid">
+        <a class="g-item" href="photos/teach-08.webp" data-caption="The gathering with the cross"><img decoding="async" src="photos/teach-08.webp" alt="Pastors gathered with cross" loading="lazy"/></a>
+        <a class="g-item" href="photos/teach-02.webp" data-caption="Pastor John teaching"><img decoding="async" src="photos/teach-02.webp" alt="Pastor John teaching" loading="lazy"/></a>
+        <a class="g-item" href="photos/teach-05.webp" data-caption="The pastors worship together"><img decoding="async" src="photos/teach-05.webp" alt="Pastors in worship" loading="lazy"/></a>
+        <a class="g-item" href="photos/teach-03.webp" data-caption="A teaching moment"><img decoding="async" src="photos/teach-03.webp" alt="Pastor teaching" loading="lazy"/></a>
+        <a class="g-item" href="photos/teach-06.webp" data-caption="Pastors in prayer"><img decoding="async" src="photos/teach-06.webp" alt="Pastors in prayer" loading="lazy"/></a>
+        <a class="g-item" href="photos/teach-04.webp" data-caption="The teaching session"><img decoding="async" src="photos/teach-04.webp" alt="Teaching session" loading="lazy"/></a>
+        <a class="g-item" href="photos/teach-07.webp" data-caption="Fellowship after the teaching"><img decoding="async" src="photos/teach-07.webp" alt="Pastors fellowship" loading="lazy"/></a>
+      </div>
+    </section>
+
+    <div class="gallery-divider" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22">
+        <rect x="11" y="5" width="2" height="14" rx=".5" fill="#c9a84c"/>
+        <rect x="7" y="9" width="10" height="2" rx=".5" fill="#c9a84c"/>
+      </svg>
+    </div>
+
+    <!-- VBS Children Ministry -->
+    <section class="gallery-section gallery-section--feature reveal" data-section="VBS Children Ministry">
+      <div class="gallery-section-head">
+        <div>
+          <h3 class="gallery-section-title">VBS Children Ministry</h3>
+        </div>
+        <p class="gallery-section-caption">Vacation Bible School with our children.</p>
+      </div>
+      <a class="g-feature" href="photos/vbs-03.webp" data-caption="VBS senior class dance and skit">
+        <figure class="parallax-frame">
+          <div class="parallax-inner">
+            <img decoding="async" src="photos/vbs-03.webp" alt="VBS senior class dance and skit" loading="lazy"/>
+          </div>
+          <figcaption>
+            <span class="g-feature-eyebrow">VBS · May 2026</span>
+            <span class="g-feature-quote">"Vacation Bible School with our children."</span>
+          </figcaption>
+        </figure>
+      </a>
+      <div class="gallery-grid">
+        <a class="g-item" href="photos/vbs-01.webp" data-caption="Memory words for all class"><img decoding="async" src="photos/vbs-01.webp" alt="VBS memory words class" loading="lazy"/></a>
+        <a class="g-item" href="photos/vbs-05.webp" data-caption="Gifts distribution for the children"><img decoding="async" src="photos/vbs-05.webp" alt="VBS gifts distribution" loading="lazy"/></a>
+        <a class="g-item" href="photos/vbs-04.webp" data-caption="Food distribution for the children"><img decoding="async" src="photos/vbs-04.webp" alt="VBS food distribution" loading="lazy"/></a>
+        <a class="g-item" href="photos/vbs-06.webp" data-caption="VBS celebration"><img decoding="async" src="photos/vbs-06.webp" alt="VBS celebration" loading="lazy"/></a>
+        <a class="g-item" href="photos/vbs-02.webp" data-caption="Final day celebration"><img decoding="async" src="photos/vbs-02.webp" alt="VBS final day" loading="lazy"/></a>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- VIDEOS -->
+<section class="section videos" id="videos">
+  <div class="container">
+    <p class="eyebrow reveal">Watch the ministry</p>
+    <h2 class="display reveal">Moments in motion.</h2>
+    <p class="lede reveal">Short clips from the Gipsy Camp Outreach and a Pastors Teaching session — please be patient as videos load on slower connections.</p>
+
+    <div class="video-grid">
+      <figure class="video-card reveal-rise">
+        <div class="video-stage" data-video="videos/gipsy-short.mp4" data-poster="photos/gipsy-07.webp" role="button" tabindex="0" aria-label="Play video: Gipsy Camp gathering at dusk">
+          <img class="video-poster" decoding="async" src="photos/gipsy-07.webp" alt="" loading="lazy" />
+          <span class="video-tint" aria-hidden="true"></span>
+          <span class="video-rule" aria-hidden="true"></span>
+          <button class="video-play" type="button" aria-label="Play">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>
+              <circle cx="32" cy="32" r="22" fill="currentColor"/>
+              <path d="M27 22l16 10-16 10V22z" fill="#0a1a3a"/>
+            </svg>
+          </button>
+          <span class="video-meta" aria-hidden="true">
+            <span class="video-meta-eyebrow">Chapter</span>
+            <span class="video-meta-place">Gipsy Camp · Vellore</span>
+          </span>
+        </div>
+        <figcaption>Gipsy Camp · gathering at dusk</figcaption>
+      </figure>
+
+      <figure class="video-card reveal-rise">
+        <div class="video-stage" data-video="videos/gipsy-01.mp4" data-poster="photos/gipsy-01.webp" role="button" tabindex="0" aria-label="Play video: Gipsy Camp sharing the Gospel">
+          <img class="video-poster" decoding="async" src="photos/gipsy-01.webp" alt="" loading="lazy" />
+          <span class="video-tint" aria-hidden="true"></span>
+          <span class="video-rule" aria-hidden="true"></span>
+          <button class="video-play" type="button" aria-label="Play">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>
+              <circle cx="32" cy="32" r="22" fill="currentColor"/>
+              <path d="M27 22l16 10-16 10V22z" fill="#0a1a3a"/>
+            </svg>
+          </button>
+          <span class="video-meta" aria-hidden="true">
+            <span class="video-meta-eyebrow">Chapter</span>
+            <span class="video-meta-place">Gipsy Camp · Vellore</span>
+          </span>
+        </div>
+        <figcaption>Gipsy Camp · sharing the Gospel</figcaption>
+      </figure>
+
+      <figure class="video-card reveal-rise">
+        <div class="video-stage" data-video="videos/gipsy-02.mp4" data-poster="photos/gipsy-04.webp" role="button" tabindex="0" aria-label="Play video: Gipsy Camp praying with the people">
+          <img class="video-poster" decoding="async" src="photos/gipsy-04.webp" alt="" loading="lazy" />
+          <span class="video-tint" aria-hidden="true"></span>
+          <span class="video-rule" aria-hidden="true"></span>
+          <button class="video-play" type="button" aria-label="Play">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>
+              <circle cx="32" cy="32" r="22" fill="currentColor"/>
+              <path d="M27 22l16 10-16 10V22z" fill="#0a1a3a"/>
+            </svg>
+          </button>
+          <span class="video-meta" aria-hidden="true">
+            <span class="video-meta-eyebrow">Chapter</span>
+            <span class="video-meta-place">Gipsy Camp · Vellore</span>
+          </span>
+        </div>
+        <figcaption>Gipsy Camp · praying with the people</figcaption>
+      </figure>
+
+      <figure class="video-card reveal-rise">
+        <div class="video-stage" data-video="videos/teach-01.mp4" data-poster="photos/teach-01.webp" role="button" tabindex="0" aria-label="Play video: Pastors Teaching April 2026">
+          <img class="video-poster" decoding="async" src="photos/teach-01.webp" alt="" loading="lazy" />
+          <span class="video-tint" aria-hidden="true"></span>
+          <span class="video-rule" aria-hidden="true"></span>
+          <button class="video-play" type="button" aria-label="Play">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>
+              <circle cx="32" cy="32" r="22" fill="currentColor"/>
+              <path d="M27 22l16 10-16 10V22z" fill="#0a1a3a"/>
+            </svg>
+          </button>
+          <span class="video-meta" aria-hidden="true">
+            <span class="video-meta-eyebrow">Chapter</span>
+            <span class="video-meta-place">Pastors Teaching · April 2026</span>
+          </span>
+        </div>
+        <figcaption>Pastors Teaching · April 2026</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq" id="faq">
+  <div class="container">
+    <p class="eyebrow reveal">Frequently asked</p>
+    <h2 class="display reveal">Honest answers, before you ask.</h2>
+    <p class="lede reveal">
+      Most of the questions we hear from sponsors, missionaries and friends &mdash; with the
+      answers Pastor John would give you if you reached him on WhatsApp tonight.
+    </p>
+
+    <div class="beliefs-list">
+      <details class="belief reveal-rise" open>
+        <summary><span class="belief-num">Q1</span><span class="belief-title">How does sponsoring an orphan child work?</span><span class="belief-chev" aria-hidden="true"></span></summary>
+        <div class="belief-body">
+          <p>
+            You commit to a monthly gift that goes directly toward an orphan child's
+            food, schooling, clothing, and care. Pastor John will confirm the monthly
+            amount with you personally when you reach out &mdash; we keep it flexible so it
+            works for your family.
+          </p>
+          <p>
+            We'll share which child you are supporting, photos and updates from time
+            to time, and you can write to them through the church.
+          </p>
+        </div>
+      </details>
+
+      <details class="belief reveal-rise">
+        <summary><span class="belief-num">Q2</span><span class="belief-title">Where does my gift actually go?</span><span class="belief-chev" aria-hidden="true"></span></summary>
+        <div class="belief-body">
+          <p>
+            Every gift goes into three works: rural pastor training, orphan
+            education and care, and the widow &amp; Bible-women ministry. Gifts
+            given for a specific child or pastor are used for that purpose.
+            Pastor John is personally accountable for the funds and is happy to
+            share details on request.
+          </p>
+        </div>
+      </details>
+
+      <details class="belief reveal-rise">
+        <summary><span class="belief-num">Q3</span><span class="belief-title">Can I come and visit the mission?</span><span class="belief-chev" aria-hidden="true"></span></summary>
+        <div class="belief-body">
+          <p>
+            Yes &mdash; we warmly welcome cross-cultural missionaries, pastors,
+            teachers, nurses, and intercessors. You can come for a few days or
+            stay longer. Reach out on WhatsApp first and we will plan the trip
+            together &mdash; we'll suggest the season, arrange accommodation, and
+            walk you through what to expect at the Gipsy Camp, the pastors
+            meetings, and the village churches.
+          </p>
+        </div>
+      </details>
+
+      <details class="belief reveal-rise">
+        <summary><span class="belief-num">Q4</span><span class="belief-title">Is HVCT a registered trust?</span><span class="belief-chev" aria-hidden="true"></span></summary>
+        <div class="belief-body">
+          <p>
+            Yes. Hallelujah Village Church Trust is the registered name of the
+            ministry. Pastor T. John Ravi Chandran is the founding pastor and
+            steward. For formal documentation or large gifts that need a
+            receipt, please reach Pastor John directly and he will provide what
+            you need.
+          </p>
+        </div>
+      </details>
+
+      <details class="belief reveal-rise">
+        <summary><span class="belief-num">Q5</span><span class="belief-title">I can't give every month. Can I still help?</span><span class="belief-chev" aria-hidden="true"></span></summary>
+        <div class="belief-body">
+          <p>
+            Absolutely. One-time gifts are deeply appreciated and stretch a long
+            way in the villages of Vellore. You can also share this site with
+            people who might partner with us, or simply pray for our pastors,
+            our widows and our children. Prayer is the first work of every
+            mission &mdash; please pray for us.
+          </p>
+        </div>
+      </details>
+
+      <details class="belief reveal-rise">
+        <summary><span class="belief-num">Q6</span><span class="belief-title">What's the best way to reach Pastor John?</span><span class="belief-chev" aria-hidden="true"></span></summary>
+        <div class="belief-body">
+          <p>
+            WhatsApp on <a href="https://wa.me/919842891578" target="_blank" rel="noopener">+91 98428 91578</a> is the fastest &mdash; he replies personally,
+            usually within a day. Email at
+            <a href="mailto:johnrchandran@gmail.com">johnrchandran@gmail.com</a> works too.
+            Please be patient on slow-network days; Vellore villages aren't always covered.
+          </p>
+        </div>
+      </details>
     </div>
   </div>
 </section>
@@ -490,29 +924,134 @@
         and sending the gospel further into Tamil Nadu.
       </p>
 
-      <div class="paypal-box">
-        <p class="paypal-label">Send a gift via PayPal to</p>
-        <div class="paypal-email">
-          <span id="paypalEmail">johnrchandran@gmail.com</span>
-          <button class="copy-btn" id="copyBtn" type="button" aria-label="Copy email">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h11v13H8zM5 5h11v3H8v8H5z"/></svg>
-            <span class="copy-label">Copy</span>
-          </button>
-        </div>
-        <p class="paypal-note">A dedicated PayPal.me donation link will be added here once it is created. In the meantime, please send your gift to the email address above using PayPal's “Send Money to a Friend” feature.</p>
+      <!-- Two giving tracks: PayPal (international) and Bank Wire (formal) -->
+      <div class="give-tracks">
 
-        <div class="cta-row centered">
-          <a class="btn btn-gold btn-lg" href="https://www.paypal.com/myaccount/transfer/homepage/pay" target="_blank" rel="noopener">
-            <span>Open PayPal</span>
+        <!-- PayPal -->
+        <div class="give-track">
+          <div class="give-track-head">
+            <span class="give-track-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.5 4h6.7c2.7 0 4.6 1.3 4.3 4-.4 3.4-2.8 4.7-5.7 4.7h-2l-.9 4.6H6.5L7.5 4zm2.1 2.4-.5 4h1.6c1.3 0 2.4-.6 2.6-1.9.2-1.5-.7-2.1-2-2.1H9.6z"/></svg>
+            </span>
+            <div>
+              <p class="give-track-label">PayPal</p>
+              <p class="give-track-sub">International giving</p>
+            </div>
+          </div>
+          <div class="copy-field">
+            <span class="copy-field-label">Send to</span>
+            <span class="copy-field-value" data-copy="johnrchandran@gmail.com">johnrchandran@gmail.com</span>
+            <button class="copy-btn" data-copy-target="johnrchandran@gmail.com" aria-label="Copy PayPal email">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <p class="give-track-note">A PayPal.me link will be added when ready. For now, use PayPal's "Send Money to a Friend" feature.</p>
+          <a class="give-track-cta" href="https://www.paypal.com/myaccount/transfer/homepage/pay" target="_blank" rel="noopener">
+            Open PayPal
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
-          <a class="btn btn-ghost-light btn-lg" id="paypalMeBtn" href="#" aria-disabled="true">
-            <span>PayPal.me link — coming soon</span>
+        </div>
+
+        <!-- Bank Wire -->
+        <div class="give-track">
+          <div class="give-track-head">
+            <span class="give-track-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 8h20L12 3zM4 10v8H3v2h18v-2h-1v-8h-2v8h-3v-8h-2v8h-2v-8H9v8H6v-8H4z" fill="currentColor"/></svg>
+            </span>
+            <div>
+              <p class="give-track-label">Bank / Wire Transfer</p>
+              <p class="give-track-sub">For larger or recurring gifts</p>
+            </div>
+          </div>
+
+          <div class="bank-grid">
+            <div class="copy-field">
+              <span class="copy-field-label">Account Name</span>
+              <span class="copy-field-value">John Ravi Chandran</span>
+              <button class="copy-btn" data-copy-target="John Ravi Chandran" aria-label="Copy account name">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="copy-field">
+              <span class="copy-field-label">Account Number</span>
+              <span class="copy-field-value monospaced">11920100043930</span>
+              <button class="copy-btn" data-copy-target="11920100043930" aria-label="Copy account number">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="copy-field">
+              <span class="copy-field-label">Bank</span>
+              <span class="copy-field-value">Federal Bank Ltd., Vellore Branch</span>
+              <button class="copy-btn" data-copy-target="Federal Bank Ltd., Vellore Branch" aria-label="Copy bank name">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="copy-field">
+              <span class="copy-field-label">Branch Address</span>
+              <span class="copy-field-value">66/1 Dr. Padma Samarsam Complex, Arni Road, Vellore 632001, Tamil Nadu, India</span>
+              <button class="copy-btn" data-copy-target="66/1 Dr. Padma Samarsam Complex, Arni Road, Vellore 632001, Tamil Nadu, India" aria-label="Copy branch address">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="copy-field">
+              <span class="copy-field-label">MICR Code</span>
+              <span class="copy-field-value monospaced">632049002</span>
+              <button class="copy-btn" data-copy-target="632049002" aria-label="Copy MICR code">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div class="copy-field">
+              <span class="copy-field-label">SWIFT Code</span>
+              <span class="copy-field-value monospaced">FDRLINBBIBD</span>
+              <button class="copy-btn" data-copy-target="FDRLINBBIBD" aria-label="Copy SWIFT code">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <a class="give-track-cta" href="http://www.federalbank.co.in/swift-transfer" target="_blank" rel="noopener">
+            Federal Bank wire info
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </a>
         </div>
       </div>
 
-      <p class="donate-foot light">Thank you for your prayers and your partnership. <em>“Every good gift… cometh down from the Father of lights.”</em> — James 1:17</p>
+      <p class="donate-foot light">Thank you for your prayers and your partnership. <em>"Every good gift… cometh down from the Father of lights."</em> — James 1:17</p>
+    </div>
+  </div>
+</section>
+
+<!-- MAP -->
+<section class="section map" id="map">
+  <div class="container">
+    <p class="eyebrow reveal">Find us</p>
+    <h2 class="display reveal">Jesus HVCT Mission Center, Melmonavur Village.</h2>
+    <p class="lede reveal">A village church on Church Street in Melmonavur, Vellore district — the heart of our ministry.</p>
+
+    <div class="map-card reveal-rise">
+      <iframe
+        src="https://www.google.com/maps?q=12.922915,79.092092&z=15&output=embed"
+        width="100%"
+        height="100%"
+        style="border:0;"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="Map to Jesus HVCT Mission Center, Melmonavur Village"
+        allowfullscreen></iframe>
+      <a class="map-directions" href="https://www.google.com/maps/dir/?api=1&destination=12.922915,79.092092" target="_blank" rel="noopener">
+        <span class="map-directions-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 22s-7-7.58-7-13a7 7 0 0 1 14 0c0 5.42-7 13-7 13z" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+        </span>
+        <span>Get Directions</span>
+        <svg viewBox="0 0 24 24" class="map-arrow" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
     </div>
   </div>
 </section>
@@ -535,7 +1074,15 @@
         </li>
         <li class="reveal">
           <span class="c-label">Address</span>
-          <span class="c-value">Jesus HVCT Mission Center<br>Church Street, Melmonavur Village<br>Abdullapuram Post, Vellore 632010<br>Vellore District, Tamil Nadu, India</span>
+          <span class="c-value">
+            T. John Ravi Chandran<br>
+            Church Street<br>
+            Melmonavur Village<br>
+            Abdullahpuram Post<br>
+            Vellore 632010<br>
+            Tamil Nadu State<br>
+            South India
+          </span>
         </li>
         <li class="reveal">
           <span class="c-label">Phone &amp; WhatsApp</span>
@@ -639,6 +1186,7 @@
         <a href="#ministries">Ministries</a>
         <a href="#beliefs">Our Beliefs</a>
         <a href="#gallery">Gallery</a>
+        <a href="#videos">Videos</a>
       </div>
       <div>
         <p class="footer-h">Partner</p>
@@ -651,35 +1199,67 @@
         <p class="footer-h">Find us</p>
         <a href="tel:+919842891578">+91 98428 91578</a>
         <a href="https://wa.me/919842891578" target="_blank" rel="noopener">WhatsApp</a>
-        <span>Melmonavur Village,<br>Vellore 632010, Tamil Nadu</span>
+        <a href="mailto:johnrchandran@gmail.com">johnrchandran@gmail.com</a>
+        <span>Church Street, Melmonavur Village,<br>Abdullahpuram Post, Vellore 632010,<br>Tamil Nadu State, South India</span>
+      </div>
+    </div>
+    <div class="footer-social">
+      <p class="footer-h">Follow</p>
+      <div class="social-row">
+        <a class="social-link" href="https://www.facebook.com/share/1Be3PRC4SQ/" target="_blank" rel="noopener" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-8h2.7l.4-3.2h-3.1V7.7c0-.9.3-1.5 1.6-1.5h1.6V3.3c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.5H7.8V13H10v8h3.5z"/></svg>
+        </a>
+        <a class="social-link" href="https://x.com/JohnJohnindia" target="_blank" rel="noopener" aria-label="X (Twitter)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.6 3h3.2l-7 8 8.2 10h-6.4l-5-6.5L4.9 21H1.7l7.5-8.6L1.4 3h6.5l4.6 6 5.1-6zm-1.1 16h1.8L7.7 4.9H5.7L16.5 19z"/></svg>
+        </a>
+        <a class="social-link" href="https://www.threads.com/@john_or_ravi" target="_blank" rel="noopener" aria-label="Threads">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.7 11.1c-.1 0-.1 0-.2-.1-.1-2-1.2-3.1-3-3.2-1.1 0-2 .4-2.6 1.3l1 .7c.4-.6 1-.9 1.7-.9 1.1.1 1.7.7 1.8 2-.4-.1-.9-.1-1.4-.1-1.7.1-2.8 1-2.7 2.3 0 .7.4 1.3 1 1.6.5.3 1.1.4 1.7.4 1.5-.1 2.3-1 2.5-2.2.5.3.8.7 1 1.2.4.8.4 2.2-.7 3.3-1 1-2.2 1.4-3.9 1.4-1.9 0-3.4-.6-4.4-1.8-.9-1.1-1.4-2.7-1.5-4.8.1-2.1.5-3.7 1.5-4.8 1-1.2 2.5-1.8 4.4-1.8 1.9 0 3.4.6 4.5 1.8.5.6.9 1.4 1.2 2.3l1.4-.4c-.3-1.1-.8-2-1.5-2.8-1.4-1.5-3.3-2.3-5.6-2.3-2.3 0-4.2.8-5.6 2.3-1.3 1.4-1.9 3.4-1.9 5.7s.7 4.3 1.9 5.7c1.4 1.5 3.3 2.3 5.6 2.3 2 0 3.5-.5 4.7-1.7 1.6-1.5 1.6-3.4 1-4.6-.4-.9-1.1-1.6-2-2.1zm-3 4c-.7 0-1.4-.3-1.4-1 0-.6.6-.9 1.6-1 .4 0 .9 0 1.3.1-.1.9-.5 1.8-1.5 1.9z"/></svg>
+        </a>
       </div>
     </div>
   </div>
   <div class="footer-base">
     <span>&copy; <span id="year"></span> Hallelujah Village Church Trust</span>
-    <span>“Go ye into all the world, and preach the gospel to every creature.” — Mark 16:15</span>
+    <span>"Go ye into all the world, and preach the gospel to every creature." — Mark 16:15</span>
   </div>
 </footer>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" aria-hidden="true">
-  <button class="lb-close" id="lbClose" aria-label="Close">&times;</button>
-  <button class="lb-prev" id="lbPrev" aria-label="Previous">‹</button>
-  <button class="lb-next" id="lbNext" aria-label="Next">›</button>
-  <img id="lbImg" alt="" />
+  <div class="lb-top" aria-hidden="true">
+    <span class="lb-section" id="lbSection"></span>
+    <span class="lb-count" id="lbCount"></span>
+  </div>
+  <button class="lb-close" id="lbClose" aria-label="Close">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <button class="lb-prev" id="lbPrev" aria-label="Previous">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <button class="lb-next" id="lbNext" aria-label="Next">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+  </button>
+  <div class="lb-stage">
+    <img decoding="async" id="lbImg" alt="" />
+  </div>
+  <div class="lb-bottom">
+    <p class="lb-caption" id="lbCaption"></p>
+  </div>
 </div>
+
+<!-- Back to top -->
+<button class="fab-top" id="fabTop" type="button" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
 
 <!-- Floating WhatsApp -->
 <a class="fab-wa" href="https://wa.me/919842891578" target="_blank" rel="noopener" aria-label="WhatsApp Pastor John">
   <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M19.11 17.39c-.28-.14-1.66-.82-1.92-.92s-.45-.14-.64.14-.73.92-.9 1.11-.33.21-.61.07c-.28-.14-1.19-.44-2.27-1.4-.84-.75-1.4-1.67-1.57-1.95-.16-.28-.02-.43.12-.57.13-.13.28-.34.42-.51.14-.17.18-.28.28-.47s.05-.36-.02-.51c-.07-.14-.64-1.54-.88-2.11-.23-.55-.46-.48-.64-.49l-.55-.01c-.18 0-.49.07-.74.36s-.97.95-.97 2.31.99 2.68 1.13 2.87c.14.19 1.95 2.97 4.72 4.16.66.28 1.18.45 1.58.58.66.21 1.26.18 1.74.11.53-.08 1.66-.68 1.89-1.34.23-.66.23-1.22.16-1.34-.07-.12-.26-.19-.54-.33z"/><path fill="currentColor" d="M26.85 5.15A14.74 14.74 0 0 0 16.32.83C8.18.83 1.56 7.45 1.55 15.59c0 2.6.68 5.14 1.98 7.39L1.42 31.17l8.4-2.2a14.74 14.74 0 0 0 6.5 1.65h.01c8.14 0 14.76-6.62 14.77-14.76A14.7 14.7 0 0 0 26.85 5.15zM16.33 28.13h-.01a12.24 12.24 0 0 1-6.23-1.71l-.45-.27-4.99 1.31 1.33-4.86-.29-.46a12.21 12.21 0 0 1-1.88-6.55c0-6.76 5.5-12.26 12.27-12.26 3.27 0 6.35 1.28 8.67 3.6a12.18 12.18 0 0 1 3.59 8.67c0 6.76-5.5 12.26-12.26 12.26z"/></svg>
 </a>
 
-<!-- GSAP -->
+<!-- GSAP (for tasteful scroll-driven reveals) -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-
-<!-- Three.js -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <script src="main.js"></script>
 </body>
