@@ -67,26 +67,35 @@
   window.addEventListener('scroll', updateNav, {passive:true});
   window.addEventListener('resize', updateNav, {passive:true});
 
-  /* ---------- Mobile drawer (with focus management + Escape) ---------- */
+  /* ---------- Mobile drawer (iOS-safe scroll lock + a11y) ---------- */
   const navToggle = document.getElementById('navToggle');
   const drawer = document.getElementById('drawer');
   let drawerLastFocus = null;
+  let drawerSavedScrollY = 0;
   function openDrawer(){
     if(!drawer || drawer.classList.contains('is-open')) return;
     drawerLastFocus = document.activeElement;
+    // iOS-safe scroll lock: capture position so position:fixed body
+    // doesn't visually jump the page to the top
+    drawerSavedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.documentElement.style.setProperty('--drawer-scroll-y', '-' + drawerSavedScrollY + 'px');
     drawer.classList.add('is-open');
     document.body.classList.add('drawer-open');
     if(navToggle) navToggle.setAttribute('aria-expanded','true');
     drawer.setAttribute('aria-hidden','false');
     setTimeout(() => {
       const firstLink = drawer.querySelector('a');
-      if(firstLink) firstLink.focus();
+      if(firstLink) firstLink.focus({preventScroll:true});
     }, 50);
   }
   function closeDrawer(){
     if(!drawer || !drawer.classList.contains('is-open')) return;
     drawer.classList.remove('is-open');
     document.body.classList.remove('drawer-open');
+    document.documentElement.style.setProperty('--drawer-scroll-y', '0px');
+    // Restore the scroll position the page was at when drawer opened
+    window.scrollTo(0, drawerSavedScrollY);
+    drawerSavedScrollY = 0;
     if(navToggle) navToggle.setAttribute('aria-expanded','false');
     drawer.setAttribute('aria-hidden','true');
     if(drawerLastFocus && document.contains(drawerLastFocus)){
